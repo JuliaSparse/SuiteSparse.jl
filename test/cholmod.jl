@@ -211,7 +211,7 @@ end
     @test ishermitian(Sparse(Hermitian(complex(ACSC), :U)))
 end
 
-@testset "test Sparse constructor for C_Sparse{Cvoid} (and read_sparse)" begin
+@testset "test Sparse constructor and read_sparse" begin
     mktempdir() do temp_dir
         testfile = joinpath(temp_dir, "tmp.mtx")
 
@@ -231,42 +231,37 @@ end
     end
 end
 
-@testset "test that Sparse(Ptr) constructor throws the right places" begin
-    @test_throws ArgumentError CHOLMOD.Sparse(convert(Ptr{CHOLMOD.C_Sparse{Float64}}, C_NULL))
-    @test_throws ArgumentError CHOLMOD.Sparse(convert(Ptr{CHOLMOD.C_Sparse{Cvoid}}, C_NULL))
-end
-
 ## The struct pointer must be constructed by the library constructor and then modified afterwards to checks that the method throws
 @testset "illegal dtype (for now but should be supported at some point)" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, CHOLMOD.CHOLMOD_SINGLE, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal dtype" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, 5, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal xtype" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, 3, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 3)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal itype I" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, CHOLMOD.CHOLMOD_INTLONG, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal itype II" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint,  5, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
@@ -315,7 +310,7 @@ end
 
 # Test Sparse and Factor
 @testset "test free!" begin
-    p::Ptr{CHOLMOD.C_Sparse{Float64}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     @test CHOLMOD.free!(p)
 end
 
@@ -762,7 +757,7 @@ end
     B = CHOLMOD.Sparse(A)
     C = B'B
     # Change internal representation to symmetric (upper/lower)
-    o = fieldoffset(CHOLMOD.C_Sparse{eltype(C)}, findall(fieldnames(CHOLMOD.C_Sparse{eltype(C)}) .== :stype)[1])
+    o = fieldoffset(CHOLMOD.cholmod_sparse, findall(fieldnames(CHOLMOD.cholmod_sparse) .== :stype)[1])
     for uplo in (1, -1)
         unsafe_store!(Ptr{Int8}(pointer(C)), uplo, Int(o) + 1)
         @test convert(Symmetric{Float64,SparseMatrixCSC{Float64,Int}}, C) ≈ Symmetric(A'A)
