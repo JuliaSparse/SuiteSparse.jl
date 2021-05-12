@@ -33,15 +33,76 @@ import SparseArrays: AbstractSparseMatrix, SparseMatrixCSC, indtype, sparse, spz
 import ..increment, ..increment!, ..decrement, ..decrement!
 
 import ..LibSuiteSparse:
+    SuiteSparse_long, TRUE, FALSE,
     CHOLMOD_MAIN_VERSION, CHOLMOD_SUB_VERSION, CHOLMOD_SUBSUB_VERSION,
     cholmod_common, cholmod_l_start,
-    SuiteSparse_long
+    # itype defines the types of integer used:
+    CHOLMOD_INT,      # all integer arrays are int
+    CHOLMOD_INTLONG,  # most are int, some are SuiteSparse_long
+    CHOLMOD_LONG,     # all integer arrays are SuiteSparse_long
+    # dtype defines what the numerical type is (double or float):
+    CHOLMOD_DOUBLE,   # all numerical values are double
+    CHOLMOD_SINGLE,   # all numerical values are float
+    # xtype defines the kind of numerical values used:
+    CHOLMOD_PATTERN,  # pattern only, no numerical values
+    CHOLMOD_REAL,     # a real matrix
+    CHOLMOD_COMPLEX,  # a complex matrix (ANSI C99 compatible)
+    CHOLMOD_ZOMPLEX,  # a complex matrix (MATLAB compatible)
+    # Scaling modes, selected by the scale input parameter:
+    CHOLMOD_SCALAR,   # A = s*A
+    CHOLMOD_ROW,      # A = diag(s)*A
+    CHOLMOD_COL,      # A = A*diag(s)
+    CHOLMOD_SYM,      # A = diag(s)*A*diag(s)
+    # Types of systems to solve
+    CHOLMOD_A,        # solve Ax=b
+    CHOLMOD_LDLt,     # solve LDL'x=b
+    CHOLMOD_LD,       # solve LDx=b
+    CHOLMOD_DLt,      # solve DL'x=b
+    CHOLMOD_L,        # solve Lx=b
+    CHOLMOD_Lt,       # solve L'x=b
+    CHOLMOD_D,        # solve Dx=b
+    CHOLMOD_P,        # permute x=Px
+    CHOLMOD_Pt,       # permute x=P'x
+    # Symmetry types
+    CHOLMOD_MM_RECTANGULAR,
+    CHOLMOD_MM_UNSYMMETRIC,
+    CHOLMOD_MM_SYMMETRIC,
+    CHOLMOD_MM_HERMITIAN,
+    CHOLMOD_MM_SKEW_SYMMETRIC,
+    CHOLMOD_MM_SYMMETRIC_POSDIAG,
+    CHOLMOD_MM_HERMITIAN_POSDIAG
 
-#########
-# Setup #
-#########
+dtyp(::Type{Float32}) = CHOLMOD_SINGLE
+dtyp(::Type{Float64}) = CHOLMOD_DOUBLE
+dtyp(::Type{ComplexF32}) = CHOLMOD_SINGLE
+dtyp(::Type{ComplexF64}) = CHOLMOD_DOUBLE
 
-include("cholmod_h.jl")
+xtyp(::Type{Float32})    = CHOLMOD_REAL
+xtyp(::Type{Float64})    = CHOLMOD_REAL
+xtyp(::Type{ComplexF32}) = CHOLMOD_COMPLEX
+xtyp(::Type{ComplexF64}) = CHOLMOD_COMPLEX
+
+# check the size of SuiteSparse_long
+if sizeof(SuiteSparse_long) == 4
+    const IndexTypes = (:Int32,)
+    const ITypes = Union{Int32}
+else
+    const IndexTypes = (:Int32, :Int64)
+    const ITypes = Union{Int32, Int64}
+end
+ityp(::Type{SuiteSparse_long}) = CHOLMOD_LONG
+
+const VTypes = Union{ComplexF64, Float64}
+const VRealTypes = Union{Float64}
+
+struct CHOLMODException <: Exception
+    msg::String
+end
+
+function error_handler(status::Cint, file::Cstring, line::Cint, message::Cstring)::Cvoid
+    status < 0 && throw(CHOLMODException(unsafe_string(message)))
+    nothing
+end
 
 const CHOLMOD_MIN_VERSION = v"2.1.1"
 
@@ -285,7 +346,7 @@ function Sparse(p::Ptr{C_Sparse{Cvoid}})
                             "unknown reasons. Please submit a bug report."))
     end
     s = unsafe_load(p)
-    Tv = s.xtype == REAL ? Float64 : ComplexF64
+    Tv = s.xtype == CHOLMOD_REAL ? Float64 : ComplexF64
     Sparse(convert(Ptr{C_Sparse{Tv}}, p))
 end
 
@@ -338,7 +399,7 @@ mutable struct Factor{Tv<:VTypes} <: Factorization{Tv}
         if s.itype != ityp(SuiteSparse_long)
             free!(ptr)
             throw(CHOLMODException("itype=$(s.itype) not supported"))
-        elseif s.xtype != xtyp(Tv) && s.xtype != PATTERN
+        elseif s.xtype != xtyp(Tv) && s.xtype != CHOLMOD_PATTERN
             free!(ptr)
             throw(CHOLMODException("xtype=$(s.xtype) not supported"))
         elseif s.dtype != dtyp(Tv)
@@ -521,7 +582,7 @@ end
 
 function factor_to_sparse!(F::Factor{Tv}) where Tv<:VTypes
     ss = unsafe_load(pointer(F))
-    ss.xtype == PATTERN && throw(CHOLMODException("only numeric factors are supported"))
+    ss.xtype == CHOLMOD_PATTERN && throw(CHOLMODException("only numeric factors are supported"))
     Sparse(ccall((@cholmod_name("factor_to_sparse"),:libcholmod),
         Ptr{C_Sparse{Tv}},
             (Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
@@ -650,15 +711,15 @@ function scale!(S::Dense{Tv}, scale::Integer, A::Sparse{Tv}) where Tv<:VRealType
     if sS.ncol != 1 && sS.nrow != 1
         throw(DimensionMismatch("first argument must be a vector"))
     end
-    if scale == SCALAR && sS.nrow != 1
+    if scale == CHOLMOD_SCALAR && sS.nrow != 1
         throw(DimensionMismatch("scaling argument must have length one"))
-    elseif scale == ROW && sS.nrow*sS.ncol != sA.nrow
+    elseif scale == CHOLMOD_ROW && sS.nrow*sS.ncol != sA.nrow
         throw(DimensionMismatch("scaling vector has length $(sS.nrow*sS.ncol), " *
             "but matrix has $(sA.nrow) rows."))
-    elseif scale == COL && sS.nrow*sS.ncol != sA.ncol
+    elseif scale == CHOLMOD_COL && sS.nrow*sS.ncol != sA.ncol
         throw(DimensionMismatch("scaling vector has length $(sS.nrow*sS.ncol), " *
             "but matrix has $(sA.ncol) columns"))
-    elseif scale == SYM
+    elseif scale == CHOLMOD_SYM
         if sA.nrow != sA.ncol
             throw(DimensionMismatch("matrix must be square"))
         elseif sS.nrow*sS.ncol != sA.nrow
@@ -1811,7 +1872,7 @@ function ishermitian(A::Sparse{Float64})
             throw(CHOLMODException("negative value returned from CHOLMOD's symmetry function. This
                 is either because the indices are not sorted or because of a memory error"))
         end
-        return i == MM_SYMMETRIC || i == MM_SYMMETRIC_POSDIAG
+        return i == CHOLMOD_MM_SYMMETRIC || i == CHOLMOD_MM_SYMMETRIC_POSDIAG
     end
 end
 function ishermitian(A::Sparse{ComplexF64})
@@ -1824,7 +1885,7 @@ function ishermitian(A::Sparse{ComplexF64})
             throw(CHOLMODException("negative value returned from CHOLMOD's symmetry function. This
                 is either because the indices are not sorted or because of a memory error"))
         end
-        return i == MM_HERMITIAN || i == MM_HERMITIAN_POSDIAG
+        return i == CHOLMOD_MM_HERMITIAN || i == CHOLMOD_MM_HERMITIAN_POSDIAG
     end
 end
 

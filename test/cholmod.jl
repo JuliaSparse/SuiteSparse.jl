@@ -238,35 +238,35 @@ end
 
 ## The struct pointer must be constructed by the library constructor and then modified afterwards to checks that the method throws
 @testset "illegal dtype (for now but should be supported at some point)" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
-    unsafe_store!(puint, CHOLMOD.SINGLE, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
+    unsafe_store!(puint, CHOLMOD.CHOLMOD_SINGLE, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal dtype" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, 5, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal xtype" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, 3, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 3)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal itype I" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
-    unsafe_store!(puint, CHOLMOD.INTLONG, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
+    unsafe_store!(puint, CHOLMOD.CHOLMOD_INTLONG, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal itype II" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint,  5, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
@@ -315,7 +315,7 @@ end
 
 # Test Sparse and Factor
 @testset "test free!" begin
-    p::Ptr{CHOLMOD.C_Sparse{Float64}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p::Ptr{CHOLMOD.C_Sparse{Float64}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     @test CHOLMOD.free!(p)
 end
 
@@ -466,16 +466,16 @@ end
         @test CHOLMOD.horzcat(A1Sparse, A2Sparse, true) == [A1 A2]
         @test CHOLMOD.vertcat(A1Sparse, A2Sparse, true) == [A1; A2]
         svec = fill(elty(1), 1)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SCALAR, A1Sparse) == A1Sparse
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.CHOLMOD_SCALAR, A1Sparse) == A1Sparse
         svec = fill(elty(1), 5)
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SCALAR, A1Sparse)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.ROW, A1Sparse) == A1Sparse
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.ROW, A1Sparse)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.COL, A1Sparse) == A1Sparse
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.COL, A1Sparse)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SYM, A1Sparse) == A1Sparse
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.SYM, A1Sparse)
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SYM, CHOLMOD.Sparse(A1[:,1:4]))
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.CHOLMOD_SCALAR, A1Sparse)
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.CHOLMOD_ROW, A1Sparse) == A1Sparse
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.CHOLMOD_ROW, A1Sparse)
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.CHOLMOD_COL, A1Sparse) == A1Sparse
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.CHOLMOD_COL, A1Sparse)
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.CHOLMOD_SYM, A1Sparse) == A1Sparse
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.CHOLMOD_SYM, A1Sparse)
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.CHOLMOD_SYM, CHOLMOD.Sparse(A1[:,1:4]))
     else
         @test_throws MethodError CHOLMOD.copy(A1Sparse, 0, 1) == A1Sparse
         @test_throws MethodError CHOLMOD.horzcat(A1Sparse, A2Sparse, true) == [A1 A2]
