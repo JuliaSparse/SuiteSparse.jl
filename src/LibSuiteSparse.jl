@@ -46,7 +46,7 @@ else
 end
 
 # exports
-const PREFIXES = ["cholmod_"]
+const PREFIXES = ["cholmod_", "CHOLMOD_"]
 for name in names(@__MODULE__; all=true), prefix in PREFIXES
     if startswith(string(name), prefix)
         @eval export $name

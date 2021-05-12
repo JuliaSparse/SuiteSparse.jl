@@ -33,45 +33,43 @@ import SparseArrays: AbstractSparseMatrix, SparseMatrixCSC, indtype, sparse, spz
 import ..increment, ..increment!, ..decrement, ..decrement!
 
 using ..LibSuiteSparse
+import ..LibSuiteSparse: SuiteSparse_long, TRUE, FALSE
 
-import ..LibSuiteSparse:
-    SuiteSparse_long, TRUE, FALSE,
-    CHOLMOD_MAIN_VERSION, CHOLMOD_SUB_VERSION, CHOLMOD_SUBSUB_VERSION,
-    # itype defines the types of integer used:
-    CHOLMOD_INT,      # all integer arrays are int
-    CHOLMOD_INTLONG,  # most are int, some are SuiteSparse_long
-    CHOLMOD_LONG,     # all integer arrays are SuiteSparse_long
-    # dtype defines what the numerical type is (double or float):
-    CHOLMOD_DOUBLE,   # all numerical values are double
-    CHOLMOD_SINGLE,   # all numerical values are float
-    # xtype defines the kind of numerical values used:
-    CHOLMOD_PATTERN,  # pattern only, no numerical values
-    CHOLMOD_REAL,     # a real matrix
-    CHOLMOD_COMPLEX,  # a complex matrix (ANSI C99 compatible)
-    CHOLMOD_ZOMPLEX,  # a complex matrix (MATLAB compatible)
-    # Scaling modes, selected by the scale input parameter:
-    CHOLMOD_SCALAR,   # A = s*A
-    CHOLMOD_ROW,      # A = diag(s)*A
-    CHOLMOD_COL,      # A = A*diag(s)
-    CHOLMOD_SYM,      # A = diag(s)*A*diag(s)
-    # Types of systems to solve
-    CHOLMOD_A,        # solve Ax=b
-    CHOLMOD_LDLt,     # solve LDL'x=b
-    CHOLMOD_LD,       # solve LDx=b
-    CHOLMOD_DLt,      # solve DL'x=b
-    CHOLMOD_L,        # solve Lx=b
-    CHOLMOD_Lt,       # solve L'x=b
-    CHOLMOD_D,        # solve Dx=b
-    CHOLMOD_P,        # permute x=Px
-    CHOLMOD_Pt,       # permute x=P'x
-    # Symmetry types
-    CHOLMOD_MM_RECTANGULAR,
-    CHOLMOD_MM_UNSYMMETRIC,
-    CHOLMOD_MM_SYMMETRIC,
-    CHOLMOD_MM_HERMITIAN,
-    CHOLMOD_MM_SKEW_SYMMETRIC,
-    CHOLMOD_MM_SYMMETRIC_POSDIAG,
-    CHOLMOD_MM_HERMITIAN_POSDIAG
+# # itype defines the types of integer used:
+# CHOLMOD_INT,      # all integer arrays are int
+# CHOLMOD_INTLONG,  # most are int, some are SuiteSparse_long
+# CHOLMOD_LONG,     # all integer arrays are SuiteSparse_long
+# # dtype defines what the numerical type is (double or float):
+# CHOLMOD_DOUBLE,   # all numerical values are double
+# CHOLMOD_SINGLE,   # all numerical values are float
+# # xtype defines the kind of numerical values used:
+# CHOLMOD_PATTERN,  # pattern only, no numerical values
+# CHOLMOD_REAL,     # a real matrix
+# CHOLMOD_COMPLEX,  # a complex matrix (ANSI C99 compatible)
+# CHOLMOD_ZOMPLEX,  # a complex matrix (MATLAB compatible)
+# # Scaling modes, selected by the scale input parameter:
+# CHOLMOD_SCALAR,   # A = s*A
+# CHOLMOD_ROW,      # A = diag(s)*A
+# CHOLMOD_COL,      # A = A*diag(s)
+# CHOLMOD_SYM,      # A = diag(s)*A*diag(s)
+# # Types of systems to solve
+# CHOLMOD_A,        # solve Ax=b
+# CHOLMOD_LDLt,     # solve LDL'x=b
+# CHOLMOD_LD,       # solve LDx=b
+# CHOLMOD_DLt,      # solve DL'x=b
+# CHOLMOD_L,        # solve Lx=b
+# CHOLMOD_Lt,       # solve L'x=b
+# CHOLMOD_D,        # solve Dx=b
+# CHOLMOD_P,        # permute x=Px
+# CHOLMOD_Pt,       # permute x=P'x
+# # Symmetry types
+# CHOLMOD_MM_RECTANGULAR,
+# CHOLMOD_MM_UNSYMMETRIC,
+# CHOLMOD_MM_SYMMETRIC,
+# CHOLMOD_MM_HERMITIAN,
+# CHOLMOD_MM_SKEW_SYMMETRIC,
+# CHOLMOD_MM_SYMMETRIC_POSDIAG,
+# CHOLMOD_MM_HERMITIAN_POSDIAG
 
 dtyp(::Type{Float32}) = CHOLMOD_SINGLE
 dtyp(::Type{Float64}) = CHOLMOD_DOUBLE
@@ -96,6 +94,31 @@ ityp(::Type{SuiteSparse_long}) = CHOLMOD_LONG
 const VTypes = Union{ComplexF64, Float64}
 const VRealTypes = Union{Float64}
 
+# overload field access methods
+function Base.getproperty(x::cholmod_sparse, f::Symbol)
+    f === :p && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :i && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :nz && return Ptr{SuiteSparse_long}(getfield(x, f))
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::cholmod_factor, f::Symbol)
+    f === :Perm && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :ColCount && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :IPerm && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :p && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :i && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :nz && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :next && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :prev && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :super && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :pi && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :px && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :s && return Ptr{SuiteSparse_long}(getfield(x, f))
+    return getfield(x, f)
+end
+
+# exception
 struct CHOLMODException <: Exception
     msg::String
 end
@@ -234,7 +257,6 @@ end
 
 mutable struct Dense{Tv<:VTypes} <: DenseMatrix{Tv}
     ptr::Ptr{cholmod_dense}
-    type::Tv
     function Dense{Tv}(ptr::Ptr{cholmod_dense}) where Tv<:VTypes
         if ptr == C_NULL
             throw(ArgumentError("dense matrix construction failed for " *
@@ -256,7 +278,6 @@ end
 
 mutable struct Sparse{Tv<:VTypes} <: AbstractSparseMatrix{Tv,SuiteSparse_long}
     ptr::Ptr{cholmod_sparse}
-    type::Tv
     function Sparse{Tv}(ptr::Ptr{cholmod_sparse}) where Tv<:VTypes
         if ptr == C_NULL
             throw(ArgumentError("sparse matrix construction failed for " *
@@ -636,7 +657,7 @@ end
 
 function get_perm(F::Factor)
     s = unsafe_load(pointer(F))
-    p = unsafe_wrap(Array, Ptr{SuiteSparse_long}(s.Perm), s.n, own = false)
+    p = unsafe_wrap(Array, s.Perm, s.n, own = false)
     p .+ 1
 end
 get_perm(FC::FactorComponent) = get_perm(Factor(FC))
@@ -699,8 +720,8 @@ function Sparse(m::Integer, n::Integer,
     o = allocate_sparse(m, n, colptr0[n + 1], iss, true, stype, Tv)
     s = unsafe_load(pointer(o))
 
-    unsafe_copyto!(Ptr{SuiteSparse_long}(s.p), pointer(colptr0), n + 1)
-    unsafe_copyto!(Ptr{SuiteSparse_long}(s.i), pointer(rowval0), colptr0[n + 1])
+    unsafe_copyto!(s.p, pointer(colptr0), n + 1)
+    unsafe_copyto!(s.i, pointer(rowval0), colptr0[n + 1])
     unsafe_copyto!(Ptr{Tv}(s.x), pointer(nzval) , colptr0[n + 1])
 
     check_sparse(o)
@@ -739,10 +760,10 @@ function Sparse{Tv}(A::SparseMatrixCSC, stype::Integer) where Tv<:VTypes
     o = allocate_sparse(size(A, 1), size(A, 2), nnz(A), true, true, stype, Tv)
     s = unsafe_load(pointer(o))
     for i = 1:(size(A, 2) + 1)
-        unsafe_store!(Ptr{SuiteSparse_long}(s.p), getcolptr(A)[i] - 1, i)
+        unsafe_store!(s.p, getcolptr(A)[i] - 1, i)
     end
     for i = 1:nnz(A)
-        unsafe_store!(Ptr{SuiteSparse_long}(s.i), rowvals(A)[i] - 1, i)
+        unsafe_store!(s.i, rowvals(A)[i] - 1, i)
     end
     if Tv <: Complex && stype != 0
         # Need to remove any non real elements in the diagonal because, in contrast to
@@ -837,8 +858,8 @@ end
 Vector(D::Dense{T}) where {T} = Vector{T}(D)
 
 function _extract_args(s, ::Type{T}) where {T<:VTypes}
-    return (s.nrow, s.ncol, increment(unsafe_wrap(Array, Ptr{SuiteSparse_long}(s.p), (s.ncol + 1,), own = false)),
-        increment(unsafe_wrap(Array, Ptr{SuiteSparse_long}(s.i), (s.nzmax,), own = false)),
+    return (s.nrow, s.ncol, increment(unsafe_wrap(Array, s.p, (s.ncol + 1,), own = false)),
+        increment(unsafe_wrap(Array, s.i, (s.nzmax,), own = false)),
         copy(unsafe_wrap(Array, Ptr{T}(s.x), (s.nzmax,), own = false)))
 end
 
@@ -1020,12 +1041,12 @@ function getindex(A::Sparse{T}, i0::Integer, i1::Integer) where T
     s.stype < 0 && i0 < i1 && return conj(A[i1,i0])
     s.stype > 0 && i0 > i1 && return conj(A[i1,i0])
 
-    r1 = Int(unsafe_load(Ptr{SuiteSparse_long}(s.p), i1) + 1)
-    r2 = Int(unsafe_load(Ptr{SuiteSparse_long}(s.p), i1 + 1))
+    r1 = Int(unsafe_load(s.p, i1) + 1)
+    r2 = Int(unsafe_load(s.p, i1 + 1))
     (r1 > r2) && return zero(T)
-    r1 = Int(searchsortedfirst(unsafe_wrap(Array, Ptr{SuiteSparse_long}(s.i), (s.nzmax,), own = false),
+    r1 = Int(searchsortedfirst(unsafe_wrap(Array, s.i, (s.nzmax,), own = false),
         i0 - 1, r1, r2, Base.Order.Forward))
-    ((r1 > r2) || (unsafe_load(Ptr{SuiteSparse_long}(s.i), r1) + 1 != i0)) ? zero(T) : unsafe_load(Ptr{T}(s.x), r1)
+    ((r1 > r2) || (unsafe_load(s.i, r1) + 1 != i0)) ? zero(T) : unsafe_load(Ptr{T}(s.x), r1)
 end
 
 @inline function getproperty(F::Factor, sym::Symbol)
