@@ -1,4 +1,4 @@
-name: Run tests
+name: CI
 on:
   pull_request:
     branches:
@@ -9,36 +9,46 @@ on:
       - 'master'
       - 'release-*'
     tags: '*'
-defaults:
-  run:
-    shell: bash
 jobs:
   test:
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        version:
+          # - '1.6'
+          - 'nightly'
         os:
           - ubuntu-latest
           - macOS-latest
           - windows-latest
-        julia-arch:
-          - 'x64'
-          - 'x86'
-        julia-version:
-          # - '1.6'
-          - 'nightly'
+        arch:
+          - x64
+          - x86
         exclude:
           - os: macOS-latest
-            julia-arch: x86
+            arch: x86
     steps:
       - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
+      - uses: julia-actions/setup-julia@v1
         with:
-          version: ${{ matrix.julia-version }}
+          version: ${{ matrix.version }}
+          arch: ${{ matrix.arch }}
+      - uses: actions/cache@v1
+        env:
+          cache-name: cache-artifacts
+        with:
+          path: ~/.julia/artifacts
+          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-test-${{ env.cache-name }}-
+            ${{ runner.os }}-test-
+            ${{ runner.os }}-
+      - uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
         run: |
-          julia --project --color=yes -e 'write("Project.toml", replace(read("Project.toml", String), r"uuid = .*?\n" =>"uuid = \"bffdd4b1-f692-4644-bc37-34e70e7d0692\"\n"));'
+          julia --project --color=yes -e 'using UUIDs; write("Project.toml", replace(read("Project.toml", String), r"uuid = .*?\n" =>"uuid = \"$(uuid4())\"\n"));'
           julia --project --color=yes --check-bounds=yes -e 'import Pkg; Pkg.build(); Pkg.test(; coverage=true)'
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v1
