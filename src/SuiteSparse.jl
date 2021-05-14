@@ -2,6 +2,9 @@
 
 module SuiteSparse
 
+include("LibSuiteSparse.jl")
+using .LibSuiteSparse
+
 import Base: \
 import LinearAlgebra: ldiv!, rdiv!
 

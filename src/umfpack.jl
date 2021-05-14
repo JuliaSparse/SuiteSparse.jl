@@ -16,7 +16,49 @@ import Serialization: AbstractSerializer, deserialize
 
 import ..increment, ..increment!, ..decrement, ..decrement!
 
-include("umfpack_h.jl")
+import ..LibSuiteSparse:
+    SuiteSparse_long,
+    umfpack_dl_defaults,
+    umfpack_dl_report_control,
+    umfpack_dl_report_info,
+    ## Type of solve
+    UMFPACK_A,        # Ax=b
+    UMFPACK_At,       # adjoint(A)x=b
+    UMFPACK_Aat,      # transpose(A)x=b
+    UMFPACK_Pt_L,     # adjoint(P)Lx=b
+    UMFPACK_L,        # Lx=b
+    UMFPACK_Lt_P,     # adjoint(L)Px=b
+    UMFPACK_Lat_P,    # transpose(L)Px=b
+    UMFPACK_Lt,       # adjoint(L)x=b
+    UMFPACK_Lat,      # transpose(L)x=b
+    UMFPACK_U_Qt,     # U*adjoint(Q)x=b
+    UMFPACK_U,        # Ux=b
+    UMFPACK_Q_Ut,     # Q*adjoint(U)x=b
+    UMFPACK_Q_Uat,    # Q*transpose(U)x=b
+    UMFPACK_Ut,       # adjoint(U)x=b
+    UMFPACK_Uat,      # transpose(U)x=b
+    ## Sizes of Control and Info arrays for returning information from solver
+    UMFPACK_INFO,
+    UMFPACK_CONTROL,
+    UMFPACK_PRL,
+    ## Status codes
+    UMFPACK_OK,
+    UMFPACK_WARNING_singular_matrix,
+    UMFPACK_WARNING_determinant_underflow,
+    UMFPACK_WARNING_determinant_overflow,
+    UMFPACK_ERROR_out_of_memory,
+    UMFPACK_ERROR_invalid_Numeric_object,
+    UMFPACK_ERROR_invalid_Symbolic_object,
+    UMFPACK_ERROR_argument_missing,
+    UMFPACK_ERROR_n_nonpositive,
+    UMFPACK_ERROR_invalid_matrix,
+    UMFPACK_ERROR_different_pattern,
+    UMFPACK_ERROR_invalid_system,
+    UMFPACK_ERROR_invalid_permutation,
+    UMFPACK_ERROR_internal_error,
+    UMFPACK_ERROR_file_IO,
+    UMFPACK_ERROR_ordering_failed
+
 struct MatrixIllConditionedException <: Exception
     msg::String
 end
@@ -64,7 +106,7 @@ macro isok(A)
 end
 
 # check the size of SuiteSparse_long
-if Int(ccall((:jl_cholmod_sizeof_long,:libsuitesparse_wrapper),Csize_t,())) == 4
+if sizeof(SuiteSparse_long) == 4
     const UmfpackIndexTypes = (:Int32,)
     const UMFITypes = Int32
 else
@@ -78,21 +120,20 @@ const UMFVTypes = Union{Float64,ComplexF64}
 
 # the control and info arrays
 const umf_ctrl = Vector{Float64}(undef, UMFPACK_CONTROL)
-ccall((:umfpack_dl_defaults,:libumfpack), Cvoid, (Ptr{Float64},), umf_ctrl)
+umfpack_dl_defaults(umf_ctrl)
 const umf_info = Vector{Float64}(undef, UMFPACK_INFO)
 
 function show_umf_ctrl(level::Real = 2.0)
     old_prt::Float64 = umf_ctrl[1]
     umf_ctrl[1] = Float64(level)
-    ccall((:umfpack_dl_report_control, :libumfpack), Cvoid, (Ptr{Float64},), umf_ctrl)
+    umfpack_dl_report_control(umf_ctrl)
     umf_ctrl[1] = old_prt
 end
 
 function show_umf_info(level::Real = 2.0)
     old_prt::Float64 = umf_ctrl[1]
     umf_ctrl[1] = Float64(level)
-    ccall((:umfpack_dl_report_info, :libumfpack), Cvoid,
-          (Ptr{Float64}, Ptr{Float64}), umf_ctrl, umf_info)
+    umfpack_dl_report_info(umf_ctrl, umf_info)
     umf_ctrl[1] = old_prt
 end
 

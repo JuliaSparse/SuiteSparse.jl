@@ -31,6 +31,8 @@ using SparseArrays: getcolptr
 using ..SuiteSparse.CHOLMOD
 using ..SuiteSparse.CHOLMOD: change_stype!, free!
 
+import ..LibSuiteSparse: cholmod_l_free
+
 function _qr!(ordering::Integer, tol::Real, econ::Integer, getCTX::Integer,
         A::Sparse{Tv},
         Bsparse::Union{Sparse{Tv}                      , Ptr{Cvoid}} = C_NULL,
@@ -52,7 +54,7 @@ function _qr!(ordering::Integer, tol::Real, econ::Integer, getCTX::Integer,
          Ptr{CHOLMOD.C_Sparse{Tv}}, Ptr{CHOLMOD.C_Sparse{Tv}}, Ptr{CHOLMOD.C_Dense{Tv}},
          Ptr{Ptr{CHOLMOD.C_Sparse{Tv}}}, Ptr{Ptr{CHOLMOD.C_Dense{Tv}}}, Ptr{Ptr{CHOLMOD.C_Sparse{Tv}}},
          Ptr{Ptr{CHOLMOD.SuiteSparse_long}}, Ptr{Ptr{CHOLMOD.C_Sparse{Tv}}}, Ptr{Ptr{CHOLMOD.SuiteSparse_long}},
-         Ptr{Ptr{CHOLMOD.C_Dense{Tv}}}, Ptr{CHOLMOD.Common}),
+         Ptr{Ptr{CHOLMOD.C_Dense{Tv}}}, Ptr{CHOLMOD.cholmod_common}),
         ordering,       # all, except 3:given treated as 0:fixed
         tol,            # columns with 2-norm <= tol treated as 0
         econ,           # e = max(min(m,econ),rank(A))
@@ -68,7 +70,7 @@ function _qr!(ordering::Integer, tol::Real, econ::Integer, getCTX::Integer,
         H,              # m-by-nh Householder vectors
         HPinv,          # size m row permutation
         HTau,           # 1-by-nh Householder coefficients
-        CHOLMOD.common[Threads.threadid()]) # /* workspace and parameters */
+        CHOLMOD.COMMONS[Threads.threadid()]) # /* workspace and parameters */
 
     if rnk < 0
         error("Sparse QR factorization failed")
@@ -85,9 +87,7 @@ function _qr!(ordering::Integer, tol::Real, econ::Integer, getCTX::Integer,
         # Free memory allocated by SPQR. This call will make sure that the
         # correct deallocator function is called and that the memory count in
         # the common struct is updated
-        ccall((:cholmod_l_free, :libcholmod), Cvoid,
-            (Csize_t, Cint, Ptr{CHOLMOD.SuiteSparse_long}, Ptr{CHOLMOD.Common}),
-            n, sizeof(CHOLMOD.SuiteSparse_long), e, CHOLMOD.common[Threads.threadid()])
+        cholmod_l_free(n, sizeof(CHOLMOD.SuiteSparse_long), e, CHOLMOD.COMMONS[Threads.threadid()])
     end
     hpinv = HPinv[]
     if hpinv == C_NULL
@@ -100,9 +100,7 @@ function _qr!(ordering::Integer, tol::Real, econ::Integer, getCTX::Integer,
         # Free memory allocated by SPQR. This call will make sure that the
         # correct deallocator function is called and that the memory count in
         # the common struct is updated
-        ccall((:cholmod_l_free, :libcholmod), Cvoid,
-            (Csize_t, Cint, Ptr{CHOLMOD.SuiteSparse_long}, Ptr{CHOLMOD.Common}),
-            m, sizeof(CHOLMOD.SuiteSparse_long), hpinv, CHOLMOD.common[Threads.threadid()])
+        cholmod_l_free(m, sizeof(CHOLMOD.SuiteSparse_long), hpinv, CHOLMOD.COMMONS[Threads.threadid()])
     end
 
     return rnk, _E, _HPinv
