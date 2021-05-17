@@ -5,6 +5,7 @@ module SPQR
 import Base: \
 using Base: require_one_based_indexing
 using LinearAlgebra
+using ..LibSuiteSparse: SuiteSparseQR_C
 
 # ordering options */
 const ORDERING_FIXED   = Int32(0)
@@ -37,24 +38,19 @@ function _qr!(ordering::Integer, tol::Real, econ::Integer, getCTX::Integer,
         A::Sparse{Tv},
         Bsparse::Union{Sparse{Tv}                      , Ptr{Cvoid}} = C_NULL,
         Bdense::Union{Dense{Tv}                        , Ptr{Cvoid}} = C_NULL,
-        Zsparse::Union{Ref{Ptr{CHOLMOD.C_Sparse{Tv}}}  , Ptr{Cvoid}} = C_NULL,
-        Zdense::Union{Ref{Ptr{CHOLMOD.C_Dense{Tv}}}    , Ptr{Cvoid}} = C_NULL,
-        R::Union{Ref{Ptr{CHOLMOD.C_Sparse{Tv}}}        , Ptr{Cvoid}} = C_NULL,
+        Zsparse::Union{Ref{Ptr{CHOLMOD.cholmod_sparse}}  , Ptr{Cvoid}} = C_NULL,
+        Zdense::Union{Ref{Ptr{CHOLMOD.cholmod_dense}}  , Ptr{Cvoid}} = C_NULL,
+        R::Union{Ref{Ptr{CHOLMOD.cholmod_sparse}}        , Ptr{Cvoid}} = C_NULL,
         E::Union{Ref{Ptr{CHOLMOD.SuiteSparse_long}}    , Ptr{Cvoid}} = C_NULL,
-        H::Union{Ref{Ptr{CHOLMOD.C_Sparse{Tv}}}        , Ptr{Cvoid}} = C_NULL,
+        H::Union{Ref{Ptr{CHOLMOD.cholmod_sparse}}        , Ptr{Cvoid}} = C_NULL,
         HPinv::Union{Ref{Ptr{CHOLMOD.SuiteSparse_long}}, Ptr{Cvoid}} = C_NULL,
-        HTau::Union{Ref{Ptr{CHOLMOD.C_Dense{Tv}}}      , Ptr{Cvoid}} = C_NULL) where {Tv<:CHOLMOD.VTypes}
+        HTau::Union{Ref{Ptr{CHOLMOD.cholmod_dense}}    , Ptr{Cvoid}} = C_NULL) where {Tv<:CHOLMOD.VTypes}
 
     ordering ∈ ORDERINGS || error("unknown ordering $ordering")
 
     AA   = unsafe_load(pointer(A))
     m, n = AA.nrow, AA.ncol
-    rnk  = ccall((:SuiteSparseQR_C, :libspqr), CHOLMOD.SuiteSparse_long,
-        (Cint, Cdouble, CHOLMOD.SuiteSparse_long, Cint,
-         Ptr{CHOLMOD.C_Sparse{Tv}}, Ptr{CHOLMOD.C_Sparse{Tv}}, Ptr{CHOLMOD.C_Dense{Tv}},
-         Ptr{Ptr{CHOLMOD.C_Sparse{Tv}}}, Ptr{Ptr{CHOLMOD.C_Dense{Tv}}}, Ptr{Ptr{CHOLMOD.C_Sparse{Tv}}},
-         Ptr{Ptr{CHOLMOD.SuiteSparse_long}}, Ptr{Ptr{CHOLMOD.C_Sparse{Tv}}}, Ptr{Ptr{CHOLMOD.SuiteSparse_long}},
-         Ptr{Ptr{CHOLMOD.C_Dense{Tv}}}, Ptr{CHOLMOD.cholmod_common}),
+    rnk  = SuiteSparseQR_C(
         ordering,       # all, except 3:given treated as 0:fixed
         tol,            # columns with 2-norm <= tol treated as 0
         econ,           # e = max(min(m,econ),rank(A))
@@ -193,11 +189,11 @@ Column permutation:
 ```
 """
 function LinearAlgebra.qr(A::SparseMatrixCSC{Tv}; tol=_default_tol(A), ordering=ORDERING_DEFAULT) where {Tv <: CHOLMOD.VTypes}
-    R     = Ref{Ptr{CHOLMOD.C_Sparse{Tv}}}()
+    R     = Ref{Ptr{CHOLMOD.cholmod_sparse}}()
     E     = Ref{Ptr{CHOLMOD.SuiteSparse_long}}()
-    H     = Ref{Ptr{CHOLMOD.C_Sparse{Tv}}}()
+    H     = Ref{Ptr{CHOLMOD.cholmod_sparse}}()
     HPinv = Ref{Ptr{CHOLMOD.SuiteSparse_long}}()
-    HTau  = Ref{Ptr{CHOLMOD.C_Dense{Tv}}}(C_NULL)
+    HTau  = Ref{Ptr{CHOLMOD.cholmod_dense}}(C_NULL)
 
     # SPQR doesn't accept symmetric matrices so we explicitly set the stype
     r, p, hpinv = _qr!(ordering, tol, 0, 0, Sparse(A, 0),
@@ -206,7 +202,7 @@ function LinearAlgebra.qr(A::SparseMatrixCSC{Tv}; tol=_default_tol(A), ordering=
 
     R_ = SparseMatrixCSC(Sparse(R[]))
     return QRSparse(SparseMatrixCSC(Sparse(H[])),
-                    vec(Array(CHOLMOD.Dense(HTau[]))),
+                    vec(Array(CHOLMOD.Dense{Tv}(HTau[]))),
                     SparseMatrixCSC(min(size(A)...),
                                     size(R_, 2),
                                     getcolptr(R_),

@@ -2,7 +2,7 @@
 
 # Theoretically CHOLMOD supports both Int32 and Int64 indices on 64-bit.
 # However experience suggests that using both in the same session causes memory
-# leaks, so we restrict indices to be SuiteSparse_long (see cholmod_h.jl).
+# leaks, so we restrict indices to be `SuiteSparse_long`.
 # Ref: https://github.com/JuliaLang/julia/issues/12664
 
 # Additionally, only Float64/ComplexF64 are supported in practice.
@@ -32,23 +32,103 @@ import SparseArrays: AbstractSparseMatrix, SparseMatrixCSC, indtype, sparse, spz
 
 import ..increment, ..increment!, ..decrement, ..decrement!
 
-import ..LibSuiteSparse:
-    CHOLMOD_MAIN_VERSION, CHOLMOD_SUB_VERSION, CHOLMOD_SUBSUB_VERSION,
-    cholmod_common, cholmod_l_start,
-    SuiteSparse_long
+using ..LibSuiteSparse
+import ..LibSuiteSparse: SuiteSparse_long, TRUE, FALSE
 
-#########
-# Setup #
-#########
+# # itype defines the types of integer used:
+# CHOLMOD_INT,      # all integer arrays are int
+# CHOLMOD_INTLONG,  # most are int, some are SuiteSparse_long
+# CHOLMOD_LONG,     # all integer arrays are SuiteSparse_long
+# # dtype defines what the numerical type is (double or float):
+# CHOLMOD_DOUBLE,   # all numerical values are double
+# CHOLMOD_SINGLE,   # all numerical values are float
+# # xtype defines the kind of numerical values used:
+# CHOLMOD_PATTERN,  # pattern only, no numerical values
+# CHOLMOD_REAL,     # a real matrix
+# CHOLMOD_COMPLEX,  # a complex matrix (ANSI C99 compatible)
+# CHOLMOD_ZOMPLEX,  # a complex matrix (MATLAB compatible)
+# # Scaling modes, selected by the scale input parameter:
+# CHOLMOD_SCALAR,   # A = s*A
+# CHOLMOD_ROW,      # A = diag(s)*A
+# CHOLMOD_COL,      # A = A*diag(s)
+# CHOLMOD_SYM,      # A = diag(s)*A*diag(s)
+# # Types of systems to solve
+# CHOLMOD_A,        # solve Ax=b
+# CHOLMOD_LDLt,     # solve LDL'x=b
+# CHOLMOD_LD,       # solve LDx=b
+# CHOLMOD_DLt,      # solve DL'x=b
+# CHOLMOD_L,        # solve Lx=b
+# CHOLMOD_Lt,       # solve L'x=b
+# CHOLMOD_D,        # solve Dx=b
+# CHOLMOD_P,        # permute x=Px
+# CHOLMOD_Pt,       # permute x=P'x
+# # Symmetry types
+# CHOLMOD_MM_RECTANGULAR,
+# CHOLMOD_MM_UNSYMMETRIC,
+# CHOLMOD_MM_SYMMETRIC,
+# CHOLMOD_MM_HERMITIAN,
+# CHOLMOD_MM_SKEW_SYMMETRIC,
+# CHOLMOD_MM_SYMMETRIC_POSDIAG,
+# CHOLMOD_MM_HERMITIAN_POSDIAG
 
-include("cholmod_h.jl")
+dtyp(::Type{Float32}) = CHOLMOD_SINGLE
+dtyp(::Type{Float64}) = CHOLMOD_DOUBLE
+dtyp(::Type{ComplexF32}) = CHOLMOD_SINGLE
+dtyp(::Type{ComplexF64}) = CHOLMOD_DOUBLE
+
+xtyp(::Type{Float32})    = CHOLMOD_REAL
+xtyp(::Type{Float64})    = CHOLMOD_REAL
+xtyp(::Type{ComplexF32}) = CHOLMOD_COMPLEX
+xtyp(::Type{ComplexF64}) = CHOLMOD_COMPLEX
+
+# check the size of SuiteSparse_long
+if sizeof(SuiteSparse_long) == 4
+    const IndexTypes = (:Int32,)
+    const ITypes = Union{Int32}
+else
+    const IndexTypes = (:Int32, :Int64)
+    const ITypes = Union{Int32, Int64}
+end
+ityp(::Type{SuiteSparse_long}) = CHOLMOD_LONG
+
+const VTypes = Union{ComplexF64, Float64}
+const VRealTypes = Union{Float64}
+
+# overload field access methods
+function Base.getproperty(x::cholmod_sparse, f::Symbol)
+    f === :p && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :i && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :nz && return Ptr{SuiteSparse_long}(getfield(x, f))
+    return getfield(x, f)
+end
+
+function Base.getproperty(x::cholmod_factor, f::Symbol)
+    f === :Perm && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :ColCount && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :IPerm && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :p && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :i && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :nz && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :next && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :prev && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :super && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :pi && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :px && return Ptr{SuiteSparse_long}(getfield(x, f))
+    f === :s && return Ptr{SuiteSparse_long}(getfield(x, f))
+    return getfield(x, f)
+end
+
+# exception
+struct CHOLMODException <: Exception
+    msg::String
+end
+
+function error_handler(status::Cint, file::Cstring, line::Cint, message::Cstring)::Cvoid
+    status < 0 && throw(CHOLMODException(unsafe_string(message)))
+    nothing
+end
 
 const CHOLMOD_MIN_VERSION = v"2.1.1"
-
-## macro to generate the name of the C function according to the integer type
-macro cholmod_name(nm)
-    string("cholmod_l_", nm)
-end
 
 # Set a `common` field, execute some code and then safely reset the field to
 # its initial value
@@ -69,28 +149,6 @@ macro cholmod_param(kwarg, code)
             $common_param = default_value
         end
     end
-end
-
-# Julia copy of the cholmod_method_struct
-# https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/master/CHOLMOD/Include/cholmod_core.h#L655
-# Keep this synchronized with `jl_cholmod_method_offsets` in
-# https://github.com/JuliaLang/julia/blob/master/deps/SuiteSparse_wrapper.c
-struct Method
-    lnz::Cdouble
-    fl::Cdouble
-    prune_dense::Cdouble
-    prune_dense2::Cdouble
-    nd_oksep::Cdouble
-    other_1::NTuple{4,Cdouble}
-    nd_small::Csize_t
-    other_2::NTuple{4,Csize_t}
-    aggressive::Cint
-    order_for_lu::Cint
-    nd_compress::Cint
-    nd_camd::Cint
-    nd_components::Cint
-    ordering::Cint
-    other_3::NTuple{4,Csize_t}
 end
 
 const COMMONS = Vector{Ref{cholmod_common}}()
@@ -192,28 +250,14 @@ end
 # Type definitions #
 ####################
 
-abstract type SuiteSparseStruct end
-
 # The three core data types for CHOLMOD: Dense, Sparse and Factor.
 # CHOLMOD manages the memory, so the Julia versions only wrap a
 # pointer to a struct.  Therefore finalizers should be registered each
 # time a pointer is returned from CHOLMOD.
 
-# Dense
-struct C_Dense{T<:VTypes} <: SuiteSparseStruct
-    nrow::Csize_t
-    ncol::Csize_t
-    nzmax::Csize_t
-    d::Csize_t
-    x::Ptr{T}
-    z::Ptr{Cvoid}
-    xtype::Cint
-    dtype::Cint
-end
-
 mutable struct Dense{Tv<:VTypes} <: DenseMatrix{Tv}
-    ptr::Ptr{C_Dense{Tv}}
-    function Dense{Tv}(ptr::Ptr{C_Dense{Tv}}) where Tv<:VTypes
+    ptr::Ptr{cholmod_dense}
+    function Dense{Tv}(ptr::Ptr{cholmod_dense}) where Tv<:VTypes
         if ptr == C_NULL
             throw(ArgumentError("dense matrix construction failed for " *
                 "unknown reasons. Please submit a bug report."))
@@ -226,36 +270,15 @@ mutable struct Dense{Tv<:VTypes} <: DenseMatrix{Tv}
             free!(ptr)
             throw(CHOLMODException("dtype=$(s.dtype) not supported"))
         end
-        A = new(ptr)
-        finalizer(free!, A)
-        return A
+        obj = new(ptr)
+        finalizer(free!, obj)
+        return obj
     end
-end
-Dense(p::Ptr{C_Dense{Tv}}) where {Tv<:VTypes} = Dense{Tv}(p)
-
-# Sparse
-# allow Cvoid pointer for reading matrices of unknown type from files as in
-# cholmod_read_sparse
-struct C_Sparse{Tv<:Union{Cvoid, VTypes}} <: SuiteSparseStruct
-    nrow::Csize_t
-    ncol::Csize_t
-    nzmax::Csize_t
-    p::Ptr{SuiteSparse_long}
-    i::Ptr{SuiteSparse_long}
-    nz::Ptr{SuiteSparse_long}
-    x::Ptr{Tv}
-    z::Ptr{Cvoid}
-    stype::Cint
-    itype::Cint
-    xtype::Cint
-    dtype::Cint
-    sorted::Cint
-    packed::Cint
 end
 
 mutable struct Sparse{Tv<:VTypes} <: AbstractSparseMatrix{Tv,SuiteSparse_long}
-    ptr::Ptr{C_Sparse{Tv}}
-    function Sparse{Tv}(ptr::Ptr{C_Sparse{Tv}}) where Tv<:VTypes
+    ptr::Ptr{cholmod_sparse}
+    function Sparse{Tv}(ptr::Ptr{cholmod_sparse}) where Tv<:VTypes
         if ptr == C_NULL
             throw(ArgumentError("sparse matrix construction failed for " *
                 "unknown reasons. Please submit a bug report."))
@@ -276,60 +299,21 @@ mutable struct Sparse{Tv<:VTypes} <: AbstractSparseMatrix{Tv,SuiteSparse_long}
         return A
     end
 end
-Sparse(p::Ptr{C_Sparse{Tv}}) where {Tv<:VTypes} = Sparse{Tv}(p)
 
 # Useful when reading in files, but not type stable
-function Sparse(p::Ptr{C_Sparse{Cvoid}})
+function Sparse(p::Ptr{cholmod_sparse})
     if p == C_NULL
         throw(ArgumentError("sparse matrix construction failed for " *
                             "unknown reasons. Please submit a bug report."))
     end
     s = unsafe_load(p)
-    Tv = s.xtype == REAL ? Float64 : ComplexF64
-    Sparse(convert(Ptr{C_Sparse{Tv}}, p))
-end
-
-Base.unsafe_convert(::Type{Ptr{Tv}}, A::Sparse{Tv}) where {Tv} = getfield(A, :ptr)
-
-# Factor
-# Cvoid is used for pattern-only factors
-struct C_Factor{Tv<:VTypes} <: SuiteSparseStruct
-    n::Csize_t
-    minor::Csize_t
-    Perm::Ptr{SuiteSparse_long}
-    ColCount::Ptr{SuiteSparse_long}
-    @static if BUILD_VERSION >= v"2.1.0"
-        IPerm::Ptr{SuiteSparse_long}  # this pointer was added in version 2.1.0
-    end
-    nzmax::Csize_t
-    p::Ptr{SuiteSparse_long}
-    i::Ptr{SuiteSparse_long}
-    x::Ptr{Tv}
-    z::Ptr{Cvoid}
-    nz::Ptr{SuiteSparse_long}
-    next::Ptr{SuiteSparse_long}
-    prev::Ptr{SuiteSparse_long}
-    nsuper::Csize_t
-    ssize::Csize_t
-    xsize::Csize_t
-    maxcsize::Csize_t
-    maxesize::Csize_t
-    super::Ptr{SuiteSparse_long}
-    pi::Ptr{SuiteSparse_long}
-    px::Ptr{SuiteSparse_long}
-    s::Ptr{SuiteSparse_long}
-    ordering::Cint
-    is_ll::Cint
-    is_super::Cint
-    is_monotonic::Cint
-    itype::Cint
-    xtype::Cint
-    dtype::Cint
+    Tv = s.xtype == CHOLMOD_REAL ? Float64 : ComplexF64
+    Sparse{Tv}(p)
 end
 
 mutable struct Factor{Tv<:VTypes} <: Factorization{Tv}
-    ptr::Ptr{C_Factor{Tv}}
-    function Factor{Tv}(ptr::Ptr{C_Factor{Tv}}, register_finalizer = true) where Tv
+    ptr::Ptr{cholmod_factor}
+    function Factor{Tv}(ptr::Ptr{cholmod_factor}, register_finalizer = true) where Tv
         if ptr == C_NULL
             throw(ArgumentError("factorization construction failed for " *
                 "unknown reasons. Please submit a bug report."))
@@ -338,7 +322,7 @@ mutable struct Factor{Tv<:VTypes} <: Factorization{Tv}
         if s.itype != ityp(SuiteSparse_long)
             free!(ptr)
             throw(CHOLMODException("itype=$(s.itype) not supported"))
-        elseif s.xtype != xtyp(Tv) && s.xtype != PATTERN
+        elseif s.xtype != xtyp(Tv) && s.xtype != CHOLMOD_PATTERN
             free!(ptr)
             throw(CHOLMODException("xtype=$(s.xtype) not supported"))
         elseif s.dtype != dtyp(Tv)
@@ -352,11 +336,14 @@ mutable struct Factor{Tv<:VTypes} <: Factorization{Tv}
         return F
     end
 end
-Factor(ptr::Ptr{C_Factor{Tv}}) where {Tv<:VTypes} = Factor{Tv}(ptr)
+Factor(ptr::Ptr{cholmod_factor}) where {Tv<:VTypes} = Factor{Tv}(ptr)
 Factor(x::Factor) = x
 
 Base.adjoint(F::Factor) = Adjoint(F)
 Base.transpose(F::Factor) = Transpose(F)
+
+
+const SuiteSparseStruct = Union{cholmod_dense, cholmod_sparse, cholmod_factor}
 
 # All pointer loads should be checked to make sure that SuiteSparse is not called with
 # a C_NULL pointer which could cause a segfault. Pointers are set to null
@@ -370,9 +357,9 @@ function Base.unsafe_convert(::Type{Ptr{T}}, x::Union{Dense,Sparse,Factor}) wher
         return xp
     end
 end
-Base.pointer(x::Dense{Tv}) where {Tv}  = Base.unsafe_convert(Ptr{C_Dense{Tv}}, x)
-Base.pointer(x::Sparse{Tv}) where {Tv} = Base.unsafe_convert(Ptr{C_Sparse{Tv}}, x)
-Base.pointer(x::Factor{Tv}) where {Tv} = Base.unsafe_convert(Ptr{C_Factor{Tv}}, x)
+Base.pointer(x::Dense{Tv}) where {Tv}  = Base.unsafe_convert(Ptr{cholmod_dense}, x)
+Base.pointer(x::Sparse{Tv}) where {Tv} = Base.unsafe_convert(Ptr{cholmod_sparse}, x)
+Base.pointer(x::Factor{Tv}) where {Tv} = Base.unsafe_convert(Ptr{cholmod_factor}, x)
 
 # FactorComponent, for encoding particular factors from a factorization
 mutable struct FactorComponent{Tv,S} <: AbstractMatrix{Tv}
@@ -404,55 +391,39 @@ Factor(FC::FactorComponent) = Factor(FC.F)
 #################
 
 # Dense wrappers
-
-### cholmod_core_h ###
 function allocate_dense(m::Integer, n::Integer, d::Integer, ::Type{Tv}) where {Tv<:VTypes}
-    Dense(ccall((@cholmod_name("allocate_dense"), :libcholmod), Ptr{C_Dense{Tv}},
-                (Csize_t, Csize_t, Csize_t, Cint, Ptr{cholmod_common}),
-                m, n, d, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_allocate_dense(m, n, d, xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 
-function free!(p::Ptr{C_Dense{Tv}}) where {Tv<:VTypes}
-    ccall((@cholmod_name("free_dense"), :libcholmod), Cint,
-          (Ref{Ptr{C_Dense{Tv}}}, Ptr{cholmod_common}),
-          p, COMMONS[Threads.threadid()]) == TRUE
+function free!(p::Ptr{cholmod_dense})
+    cholmod_l_free_dense(Ref(p), COMMONS[Threads.threadid()]) == TRUE
 end
+
 function zeros(m::Integer, n::Integer, ::Type{Tv}) where Tv<:VTypes
-    Dense(ccall((@cholmod_name("zeros"), :libcholmod), Ptr{C_Dense{Tv}},
-                (Csize_t, Csize_t, Cint, Ptr{cholmod_common}),
-                m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_zeros(m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 zeros(m::Integer, n::Integer) = zeros(m, n, Float64)
 
 function ones(m::Integer, n::Integer, ::Type{Tv}) where Tv<:VTypes
-    Dense(ccall((@cholmod_name("ones"), :libcholmod), Ptr{C_Dense{Tv}},
-                (Csize_t, Csize_t, Cint, Ptr{cholmod_common}),
-                m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_ones(m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 ones(m::Integer, n::Integer) = ones(m, n, Float64)
 
 function eye(m::Integer, n::Integer, ::Type{Tv}) where Tv<:VTypes
-    Dense(ccall((@cholmod_name("eye"), :libcholmod), Ptr{C_Dense{Tv}},
-                (Csize_t, Csize_t, Cint, Ptr{cholmod_common}),
-                m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_eye(m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 eye(m::Integer, n::Integer) = eye(m, n, Float64)
 eye(n::Integer) = eye(n, n, Float64)
 
 function copy(A::Dense{Tv}) where Tv<:VTypes
-    Dense(ccall((@cholmod_name("copy_dense"), :libcholmod), Ptr{C_Dense{Tv}},
-                (Ptr{C_Dense{Tv}}, Ptr{cholmod_common}),
-                A, COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_copy_dense(A, COMMONS[Threads.threadid()]))
 end
 
 function sort!(S::Sparse{Tv}) where Tv<:VTypes
-    ccall((@cholmod_name("sort"), :libcholmod), Cint,
-          (Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-          S, COMMONS[Threads.threadid()])
+    cholmod_l_sort(S, COMMONS[Threads.threadid()])
     return S
 end
 
-### cholmod_matrixops.h ###
 function norm_dense(D::Dense{Tv}, p::Integer) where Tv<:VTypes
     s = unsafe_load(pointer(D))
     if p == 2
@@ -462,157 +433,97 @@ function norm_dense(D::Dense{Tv}, p::Integer) where Tv<:VTypes
     elseif p != 0 && p != 1
         throw(ArgumentError("second argument must be either 0 (Inf norm), 1, or 2"))
     end
-    ccall((@cholmod_name("norm_dense"), :libcholmod), Cdouble,
-        (Ptr{C_Dense{Tv}}, Cint, Ptr{cholmod_common}),
-          D, p, COMMONS[Threads.threadid()])
+    cholmod_l_norm_dense(D, p, COMMONS[Threads.threadid()])
 end
 
-### cholmod_check.h ###
 function check_dense(A::Dense{Tv}) where Tv<:VTypes
-    ccall((@cholmod_name("check_dense"), :libcholmod), Cint,
-          (Ptr{C_Dense{Tv}}, Ptr{cholmod_common}),
-          pointer(A), COMMONS[Threads.threadid()]) != 0
+    cholmod_l_check_dense(pointer(A), COMMONS[Threads.threadid()]) != 0
 end
 
 # Non-Dense wrappers
-### cholmod_core.h ###
 function allocate_sparse(nrow::Integer, ncol::Integer, nzmax::Integer,
         sorted::Bool, packed::Bool, stype::Integer, ::Type{Tv}) where {Tv<:VTypes}
-    Sparse(ccall((@cholmod_name("allocate_sparse"), :libcholmod),
-            Ptr{C_Sparse{Tv}},
-                (Csize_t, Csize_t, Csize_t, Cint,
-                 Cint, Cint, Cint, Ptr{cholmod_common}),
-                nrow, ncol, nzmax, sorted,
-                packed, stype, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_allocate_sparse(nrow, ncol, nzmax, sorted, packed, stype,
+                                         xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 
-function free!(ptr::Ptr{C_Sparse{Tv}}) where Tv<:VTypes
-    ccall((@cholmod_name("free_sparse"), :libcholmod), Cint,
-          (Ref{Ptr{C_Sparse{Tv}}}, Ptr{cholmod_common}),
-          ptr, COMMONS[Threads.threadid()]) == TRUE
+function free!(ptr::Ptr{cholmod_sparse})
+    cholmod_l_free_sparse(Ref(ptr), COMMONS[Threads.threadid()]) == TRUE
 end
 
-function free!(ptr::Ptr{C_Factor{Tv}}) where Tv<:VTypes
+function free!(ptr::Ptr{cholmod_factor})
     # Warning! Important that finalizer doesn't modify the global Common struct.
-    ccall((@cholmod_name("free_factor"), :libcholmod), Cint,
-          (Ref{Ptr{C_Factor{Tv}}}, Ptr{cholmod_common}),
-          ptr, COMMONS[Threads.threadid()]) == TRUE
+    cholmod_l_free_factor(Ref(ptr), COMMONS[Threads.threadid()]) == TRUE
 end
 
 function aat(A::Sparse{Tv}, fset::Vector{SuiteSparse_long}, mode::Integer) where Tv<:VRealTypes
-    Sparse(ccall((@cholmod_name("aat"), :libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{SuiteSparse_long}, Csize_t, Cint, Ptr{cholmod_common}),
-                A, fset, length(fset), mode, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_aat(A, fset, length(fset), mode, COMMONS[Threads.threadid()]))
 end
 
 function sparse_to_dense(A::Sparse{Tv}) where Tv<:VTypes
-    Dense(ccall((@cholmod_name("sparse_to_dense"),:libcholmod),
-        Ptr{C_Dense{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-                A, COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_sparse_to_dense(A, COMMONS[Threads.threadid()]))
 end
 function dense_to_sparse(D::Dense{Tv}, ::Type{SuiteSparse_long}) where Tv<:VTypes
-    Sparse(ccall((@cholmod_name("dense_to_sparse"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Dense{Tv}}, Cint, Ptr{cholmod_common}),
-                D, true, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_dense_to_sparse(D, true, COMMONS[Threads.threadid()]))
 end
 
 function factor_to_sparse!(F::Factor{Tv}) where Tv<:VTypes
     ss = unsafe_load(pointer(F))
-    ss.xtype == PATTERN && throw(CHOLMODException("only numeric factors are supported"))
-    Sparse(ccall((@cholmod_name("factor_to_sparse"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-                F, COMMONS[Threads.threadid()]))
+    ss.xtype == CHOLMOD_PATTERN && throw(CHOLMODException("only numeric factors are supported"))
+    Sparse{Tv}(cholmod_l_factor_to_sparse(F, COMMONS[Threads.threadid()]))
 end
 
 function change_factor!(F::Factor{Tv}, to_ll::Bool, to_super::Bool, to_packed::Bool,
                         to_monotonic::Bool) where Tv<:VTypes
-    ccall((@cholmod_name("change_factor"),:libcholmod), Cint,
-          (Cint, Cint, Cint, Cint, Cint, Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-          xtyp(Tv), to_ll, to_super, to_packed, to_monotonic, F, COMMONS[Threads.threadid()]) == TRUE
+    cholmod_l_change_factor(xtyp(Tv), to_ll, to_super, to_packed, to_monotonic, F, COMMONS[Threads.threadid()]) == TRUE
 end
 
 function check_sparse(A::Sparse{Tv}) where Tv<:VTypes
-    ccall((@cholmod_name("check_sparse"),:libcholmod), Cint,
-          (Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-           A, COMMONS[Threads.threadid()]) != 0
+    cholmod_l_check_sparse(A, COMMONS[Threads.threadid()]) != 0
 end
 
 function check_factor(F::Factor{Tv}) where Tv<:VTypes
-    ccall((@cholmod_name("check_factor"),:libcholmod), Cint,
-          (Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-           F, COMMONS[Threads.threadid()]) != 0
+    cholmod_l_check_factor(F, COMMONS[Threads.threadid()]) != 0
 end
 
-function nnz(A::Sparse{Tv}) where Tv<:VTypes
-    ccall((@cholmod_name("nnz"),:libcholmod), Int,
-            (Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-                A, COMMONS[Threads.threadid()])
-end
+nnz(A::Sparse{<:VTypes}) = cholmod_l_nnz(A, COMMONS[Threads.threadid()])
 
 function speye(m::Integer, n::Integer, ::Type{Tv}) where Tv<:VTypes
-    Sparse(ccall((@cholmod_name("speye"), :libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Csize_t, Csize_t, Cint, Ptr{cholmod_common}),
-                m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_speye(m, n, xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 
 function spzeros(m::Integer, n::Integer, nzmax::Integer, ::Type{Tv}) where Tv<:VTypes
-    Sparse(ccall((@cholmod_name("spzeros"), :libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Csize_t, Csize_t, Csize_t, Cint, Ptr{cholmod_common}),
-             m, n, nzmax, xtyp(Tv), COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_spzeros(m, n, nzmax, xtyp(Tv), COMMONS[Threads.threadid()]))
 end
 
 function transpose_(A::Sparse{Tv}, values::Integer) where Tv<:VTypes
-    Sparse(ccall((@cholmod_name("transpose"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Cint, Ptr{cholmod_common}),
-                A, values, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_transpose(A, values, COMMONS[Threads.threadid()]))
 end
 
 function copy(F::Factor{Tv}) where Tv<:VTypes
-    Factor(ccall((@cholmod_name("copy_factor"),:libcholmod),
-        Ptr{C_Factor{Tv}},
-            (Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-                F, COMMONS[Threads.threadid()]))
+    Factor{Tv}(cholmod_l_copy_factor(F, COMMONS[Threads.threadid()]))
 end
 function copy(A::Sparse{Tv}) where Tv<:VTypes
-    Sparse(ccall((@cholmod_name("copy_sparse"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-                A, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_copy_sparse(A, COMMONS[Threads.threadid()]))
 end
 function copy(A::Sparse{Tv}, stype::Integer, mode::Integer) where Tv<:VRealTypes
-    Sparse(ccall((@cholmod_name("copy"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Cint, Cint, Ptr{cholmod_common}),
-                A, stype, mode, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_copy(A, stype, mode, COMMONS[Threads.threadid()]))
 end
 
-### cholmod_check.h ###
 function print_sparse(A::Sparse{Tv}, name::String) where Tv<:VTypes
     isascii(name) || error("non-ASCII name: $name")
     @cholmod_param print = 3 begin
-        ccall((@cholmod_name("print_sparse"),:libcholmod), Cint,
-            (Ptr{C_Sparse{Tv}}, Ptr{UInt8}, Ptr{cholmod_common}),
-                    A, name, COMMONS[Threads.threadid()])
+        cholmod_l_print_sparse(A, name, COMMONS[Threads.threadid()])
     end
     nothing
 end
 function print_factor(F::Factor{Tv}, name::String) where Tv<:VTypes
     @cholmod_param print = 3 begin
-        ccall((@cholmod_name("print_factor"),:libcholmod), Cint,
-            (Ptr{C_Factor{Tv}}, Ptr{UInt8}, Ptr{cholmod_common}),
-                F, name, COMMONS[Threads.threadid()])
+        cholmod_l_print_factor(F, name, COMMONS[Threads.threadid()])
     end
     nothing
 end
 
-### cholmod_matrixops.h ###
 function ssmult(A::Sparse{Tv}, B::Sparse{Tv}, stype::Integer,
         values::Bool, sorted::Bool) where Tv<:VRealTypes
     lA = unsafe_load(pointer(A))
@@ -620,28 +531,18 @@ function ssmult(A::Sparse{Tv}, B::Sparse{Tv}, stype::Integer,
     if lA.ncol != lB.nrow
         throw(DimensionMismatch("inner matrix dimensions do not fit"))
     end
-    Sparse(ccall((@cholmod_name("ssmult"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{C_Sparse{Tv}}, Cint, Cint,
-                Cint, Ptr{cholmod_common}),
-             A, B, stype, values,
-                sorted, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_ssmult(A, B, stype, values, sorted, COMMONS[Threads.threadid()]))
 end
 
 function norm_sparse(A::Sparse{Tv}, norm::Integer) where Tv<:VTypes
     if norm != 0 && norm != 1
         throw(ArgumentError("norm argument must be either 0 or 1"))
     end
-    ccall((@cholmod_name("norm_sparse"), :libcholmod), Cdouble,
-            (Ptr{C_Sparse{Tv}}, Cint, Ptr{cholmod_common}),
-                A, norm, COMMONS[Threads.threadid()])
+    cholmod_l_norm_sparse(A, norm, COMMONS[Threads.threadid()])
 end
 
 function horzcat(A::Sparse{Tv}, B::Sparse{Tv}, values::Bool) where Tv<:VRealTypes
-    Sparse(ccall((@cholmod_name("horzcat"), :libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{C_Sparse{Tv}}, Cint, Ptr{cholmod_common}),
-             A, B, values, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_horzcat(A, B, values, COMMONS[Threads.threadid()]))
 end
 
 function scale!(S::Dense{Tv}, scale::Integer, A::Sparse{Tv}) where Tv<:VRealTypes
@@ -650,15 +551,15 @@ function scale!(S::Dense{Tv}, scale::Integer, A::Sparse{Tv}) where Tv<:VRealType
     if sS.ncol != 1 && sS.nrow != 1
         throw(DimensionMismatch("first argument must be a vector"))
     end
-    if scale == SCALAR && sS.nrow != 1
+    if scale == CHOLMOD_SCALAR && sS.nrow != 1
         throw(DimensionMismatch("scaling argument must have length one"))
-    elseif scale == ROW && sS.nrow*sS.ncol != sA.nrow
+    elseif scale == CHOLMOD_ROW && sS.nrow*sS.ncol != sA.nrow
         throw(DimensionMismatch("scaling vector has length $(sS.nrow*sS.ncol), " *
             "but matrix has $(sA.nrow) rows."))
-    elseif scale == COL && sS.nrow*sS.ncol != sA.ncol
+    elseif scale == CHOLMOD_COL && sS.nrow*sS.ncol != sA.ncol
         throw(DimensionMismatch("scaling vector has length $(sS.nrow*sS.ncol), " *
             "but matrix has $(sA.ncol) columns"))
-    elseif scale == SYM
+    elseif scale == CHOLMOD_SYM
         if sA.nrow != sA.ncol
             throw(DimensionMismatch("matrix must be square"))
         elseif sS.nrow*sS.ncol != sA.nrow
@@ -668,9 +569,7 @@ function scale!(S::Dense{Tv}, scale::Integer, A::Sparse{Tv}) where Tv<:VRealType
     end
 
     sA = unsafe_load(pointer(A))
-    ccall((@cholmod_name("scale"),:libcholmod), Cint,
-          (Ptr{C_Dense{Tv}}, Cint, Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-          S, scale, A, COMMONS[Threads.threadid()])
+    cholmod_l_scale(S, scale, A, COMMONS[Threads.threadid()])
     A
 end
 
@@ -682,19 +581,12 @@ function sdmult!(A::Sparse{Tv}, transpose::Bool,
     if nc != size(X, 1)
         throw(DimensionMismatch("incompatible dimensions, $nc and $(size(X,1))"))
     end
-    ccall((@cholmod_name("sdmult"),:libcholmod), Cint,
-          (Ptr{C_Sparse{Tv}}, Cint,
-           Ref{ComplexF64}, Ref{ComplexF64},
-           Ptr{C_Dense{Tv}}, Ptr{C_Dense{Tv}}, Ptr{cholmod_common}),
-          A, transpose, α, β, X, Y, COMMONS[Threads.threadid()])
+    cholmod_l_sdmult(A, transpose, Ref(α), Ref(β), X, Y, COMMONS[Threads.threadid()])
     Y
 end
 
 function vertcat(A::Sparse{Tv}, B::Sparse{Tv}, values::Bool) where Tv<:VRealTypes
-    Sparse(ccall((@cholmod_name("vertcat"), :libcholmod),
-            Ptr{C_Sparse{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{C_Sparse{Tv}}, Cint, Ptr{cholmod_common}),
-                A, B, values, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_vertcat(A, B, values, COMMONS[Threads.threadid()]))
 end
 
 function symmetry(A::Sparse{Tv}, option::Integer) where Tv<:VTypes
@@ -702,44 +594,28 @@ function symmetry(A::Sparse{Tv}, option::Integer) where Tv<:VTypes
     pmatched = Ref{SuiteSparse_long}()
     nzoffdiag = Ref{SuiteSparse_long}()
     nzdiag = Ref{SuiteSparse_long}()
-    rv = ccall((@cholmod_name("symmetry"), :libcholmod), Cint,
-            (Ptr{C_Sparse{Tv}}, Cint, Ptr{SuiteSparse_long}, Ptr{SuiteSparse_long},
-                Ptr{SuiteSparse_long}, Ptr{SuiteSparse_long}, Ptr{cholmod_common}),
-                    A, option, xmatched, pmatched,
-                        nzoffdiag, nzdiag, COMMONS[Threads.threadid()])
+    rv = cholmod_l_symmetry(A, option, xmatched, pmatched,
+                            nzoffdiag, nzdiag, COMMONS[Threads.threadid()])
     rv, xmatched[], pmatched[], nzoffdiag[], nzdiag[]
 end
 
-# cholmod_cholesky.h
 # For analyze, analyze_p, and factorize_p!, the Common argument must be
 # supplied in order to control if the factorization is LLt or LDLt
 function analyze(A::Sparse{Tv}) where Tv<:VTypes
-    Factor(ccall((@cholmod_name("analyze"),:libcholmod),
-        Ptr{C_Factor{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-                A, COMMONS[Threads.threadid()]))
+    Factor{Tv}(cholmod_l_analyze(A, COMMONS[Threads.threadid()]))
 end
 function analyze_p(A::Sparse{Tv}, perm::Vector{SuiteSparse_long}) where Tv<:VTypes
     length(perm) != size(A,1) && throw(BoundsError())
-    Factor(ccall((@cholmod_name("analyze_p"),:libcholmod),
-            Ptr{C_Factor{Tv}},
-            (Ptr{C_Sparse{Tv}}, Ptr{SuiteSparse_long}, Ptr{SuiteSparse_long},
-                Csize_t, Ptr{cholmod_common}),
-                A, perm, C_NULL, 0, COMMONS[Threads.threadid()]))
+    Factor{Tv}(cholmod_l_analyze_p(A, perm, C_NULL, 0, COMMONS[Threads.threadid()]))
 end
 function factorize!(A::Sparse{Tv}, F::Factor{Tv}) where Tv<:VTypes
-    ccall((@cholmod_name("factorize"),:libcholmod), Cint,
-          (Ptr{C_Sparse{Tv}}, Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-          A, F, COMMONS[Threads.threadid()])
+    cholmod_l_factorize(A, F, COMMONS[Threads.threadid()])
     F
 end
 function factorize_p!(A::Sparse{Tv}, β::Real, F::Factor{Tv}) where Tv<:VTypes
     # note that β is passed as a complex number (double beta[2]),
     # but the CHOLMOD manual says that only beta[0] (real part) is used
-    ccall((@cholmod_name("factorize_p"),:libcholmod), Cint,
-          (Ptr{C_Sparse{Tv}}, Ref{ComplexF64}, Ptr{SuiteSparse_long}, Csize_t,
-           Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-          A, β, C_NULL, 0, F, COMMONS[Threads.threadid()])
+    cholmod_l_factorize_p(A, Ref{Cdouble}(β), C_NULL, 0, F, COMMONS[Threads.threadid()])
     F
 end
 
@@ -756,9 +632,7 @@ function solve(sys::Integer, F::Factor{Tv}, B::Dense{Tv}) where Tv<:VTypes
             throw(LinearAlgebra.ZeroPivotException(s.minor))
         end
     end
-    Dense(ccall((@cholmod_name("solve"),:libcholmod), Ptr{C_Dense{Tv}},
-            (Cint, Ptr{C_Factor{Tv}}, Ptr{C_Dense{Tv}}, Ptr{cholmod_common}),
-                sys, F, B, COMMONS[Threads.threadid()]))
+    Dense{Tv}(cholmod_l_solve(sys, F, B, COMMONS[Threads.threadid()]))
 end
 
 function spsolve(sys::Integer, F::Factor{Tv}, B::Sparse{Tv}) where Tv<:VTypes
@@ -766,18 +640,12 @@ function spsolve(sys::Integer, F::Factor{Tv}, B::Sparse{Tv}) where Tv<:VTypes
         throw(DimensionMismatch("LHS and RHS should have the same number of rows. " *
             "LHS has $(size(F,1)) rows, but RHS has $(size(B,1)) rows."))
     end
-    Sparse(ccall((@cholmod_name("spsolve"),:libcholmod),
-        Ptr{C_Sparse{Tv}},
-            (Cint, Ptr{C_Factor{Tv}}, Ptr{C_Sparse{Tv}}, Ptr{cholmod_common}),
-                sys, F, B, COMMONS[Threads.threadid()]))
+    Sparse{Tv}(cholmod_l_spsolve(sys, F, B, COMMONS[Threads.threadid()]))
 end
 
 # Autodetects the types
 function read_sparse(file::Libc.FILE, ::Type{SuiteSparse_long})
-    Sparse(ccall((@cholmod_name("read_sparse"), :libcholmod),
-                 Ptr{C_Sparse{Cvoid}},
-                 (Ptr{Cvoid}, Ptr{cholmod_common}),
-                 file.ptr, COMMONS[Threads.threadid()]))
+    Sparse(cholmod_l_read_sparse(file.ptr, COMMONS[Threads.threadid()]))
 end
 
 function read_sparse(file::IO, T)
@@ -804,7 +672,7 @@ function Dense{T}(A::StridedVecOrMat) where T<:VTypes
     GC.@preserve d begin
         s = unsafe_load(pointer(d))
         for (i, c) in enumerate(eachindex(A))
-            unsafe_store!(s.x, A[c], i)
+            unsafe_store!(Ptr{T}(s.x), A[c], i)
         end
     end
     d
@@ -814,7 +682,7 @@ function Dense{T}(A::Union{Adjoint{<:Any, <:StridedVecOrMat}, Transpose{<:Any, <
     GC.@preserve d begin
         s = unsafe_load(pointer(d))
         for (i, c) in enumerate(eachindex(A))
-            unsafe_store!(s.x, A[c], i)
+            unsafe_store!(Ptr{T}(s.x), A[c], i)
         end
     end
     d
@@ -854,7 +722,7 @@ function Sparse(m::Integer, n::Integer,
 
     unsafe_copyto!(s.p, pointer(colptr0), n + 1)
     unsafe_copyto!(s.i, pointer(rowval0), colptr0[n + 1])
-    unsafe_copyto!(s.x, pointer(nzval) , colptr0[n + 1])
+    unsafe_copyto!(Ptr{Tv}(s.x), pointer(nzval) , colptr0[n + 1])
 
     check_sparse(o)
 
@@ -904,14 +772,14 @@ function Sparse{Tv}(A::SparseMatrixCSC, stype::Integer) where Tv<:VTypes
         for j = 1:size(A, 2)
             for ip = getcolptr(A)[j]:getcolptr(A)[j + 1] - 1
                 v = nonzeros(A)[ip]
-                unsafe_store!(s.x, rowvals(A)[ip] == j ? Complex(real(v)) : v, ip)
+                unsafe_store!(Ptr{Tv}(s.x), rowvals(A)[ip] == j ? Complex(real(v)) : v, ip)
             end
         end
     elseif Tv == eltype(nonzeros(A))
-        unsafe_copyto!(s.x, pointer(nonzeros(A)), nnz(A))
+        unsafe_copyto!(Ptr{Tv}(s.x), pointer(nonzeros(A)), nnz(A))
     else
         for i = 1:nnz(A)
-            unsafe_store!(s.x, nonzeros(A)[i], i)
+            unsafe_store!(Ptr{Tv}(s.x), nonzeros(A)[i], i)
         end
     end
 
@@ -963,18 +831,18 @@ Base.copyto!(dest::AbstractArray{T}, D::Dense{T}) where {T<:VTypes} = _copy!(des
 Base.copyto!(dest::AbstractArray{T,2}, D::Dense{T}) where {T<:VTypes} = _copy!(dest, D)
 Base.copyto!(dest::AbstractArray, D::Dense) = _copy!(dest, D)
 
-function _copy!(dest::AbstractArray, D::Dense)
+function _copy!(dest::AbstractArray, D::Dense{T}) where {T<:VTypes}
     require_one_based_indexing(dest)
     s = unsafe_load(pointer(D))
     n = s.nrow*s.ncol
     n <= length(dest) || throw(BoundsError(dest, n))
     if s.d == s.nrow && isa(dest, Array)
-        unsafe_copyto!(pointer(dest), s.x, s.d*s.ncol)
+        unsafe_copyto!(pointer(dest), Ptr{T}(s.x), s.d*s.ncol)
     else
         k = 0
         for j = 1:s.ncol
             for i = 1:s.nrow
-                dest[k+=1] = unsafe_load(s.x, i + (j - 1)*s.d)
+                dest[k+=1] = unsafe_load(Ptr{T}(s.x), i + (j - 1)*s.d)
             end
         end
     end
@@ -989,10 +857,10 @@ function Vector{T}(D::Dense{T}) where T
 end
 Vector(D::Dense{T}) where {T} = Vector{T}(D)
 
-function _extract_args(s)
+function _extract_args(s, ::Type{T}) where {T<:VTypes}
     return (s.nrow, s.ncol, increment(unsafe_wrap(Array, s.p, (s.ncol + 1,), own = false)),
         increment(unsafe_wrap(Array, s.i, (s.nzmax,), own = false)),
-        copy(unsafe_wrap(Array, s.x, (s.nzmax,), own = false)))
+        copy(unsafe_wrap(Array, Ptr{T}(s.x), (s.nzmax,), own = false)))
 end
 
 # Trim extra elements in rowval and nzval left around sometimes by CHOLMOD rutines
@@ -1009,7 +877,7 @@ function SparseMatrixCSC{Tv,SuiteSparse_long}(A::Sparse{Tv}) where Tv
         throw(ArgumentError("matrix has stype != 0. Convert to matrix " *
             "with stype == 0 before converting to SparseMatrixCSC"))
     end
-    args = _extract_args(s)
+    args = _extract_args(s, Tv)
     s.sorted == 0 && _sort_buffers!(args...);
     return _trim_nz_builder!(args...)
 end
@@ -1017,7 +885,7 @@ end
 function Symmetric{Float64,SparseMatrixCSC{Float64,SuiteSparse_long}}(A::Sparse{Float64})
     s = unsafe_load(pointer(A))
     issymmetric(A) || throw(ArgumentError("matrix is not symmetric"))
-    args = _extract_args(s)
+    args = _extract_args(s, Float64)
     s.sorted == 0 && _sort_buffers!(args...)
     Symmetric(_trim_nz_builder!(args...), s.stype > 0 ? :U : :L)
 end
@@ -1026,7 +894,7 @@ convert(T::Type{Symmetric{Float64,SparseMatrixCSC{Float64,SuiteSparse_long}}}, A
 function Hermitian{Tv,SparseMatrixCSC{Tv,SuiteSparse_long}}(A::Sparse{Tv}) where Tv<:VTypes
     s = unsafe_load(pointer(A))
     ishermitian(A) || throw(ArgumentError("matrix is not Hermitian"))
-    args = _extract_args(s)
+    args = _extract_args(s, Tv)
     s.sorted == 0 && _sort_buffers!(args...)
     Hermitian(_trim_nz_builder!(args...), s.stype > 0 ? :U : :L)
 end
@@ -1083,12 +951,10 @@ sparse(FC::FactorComponent{Tv,:LD}) where {Tv} = sparse(Sparse(Factor(FC)))
 
 # Calculate the offset into the stype field of the cholmod_sparse_struct and
 # change the value
-let offset = fieldoffset(C_Sparse{Float64}, findfirst(name -> name === :stype, fieldnames(C_Sparse{Float64}))::Int)
-    global change_stype!
-    function change_stype!(A::Sparse, i::Integer)
-        unsafe_store!(convert(Ptr{Cint}, pointer(A)), i, div(offset, 4) + 1)
-        return A
-    end
+const __SPARSE_STYPE_OFFSET = fieldoffset(cholmod_sparse_struct, findfirst(name -> name === :stype, fieldnames(cholmod_sparse_struct))::Int)
+function change_stype!(A::Sparse, i::Integer)
+    unsafe_store!(Ptr{Cint}(pointer(A) + __SPARSE_STYPE_OFFSET), i)
+    return A
 end
 
 free!(A::Dense)  = free!(pointer(A))
@@ -1162,10 +1028,10 @@ adjoint(FC::FactorComponent{Tv,:DU}) where {Tv} = FactorComponent{Tv,:LD}(FC.F)
 adjoint(FC::FactorComponent{Tv,:PtLD}) where {Tv} = FactorComponent{Tv,:DUP}(FC.F)
 adjoint(FC::FactorComponent{Tv,:DUP}) where {Tv} = FactorComponent{Tv,:PtLD}(FC.F)
 
-function getindex(A::Dense, i::Integer)
+function getindex(A::Dense{T}, i::Integer) where {T<:VTypes}
     s = unsafe_load(pointer(A))
     0 < i <= s.nrow*s.ncol || throw(BoundsError())
-    unsafe_load(s.x, i)
+    unsafe_load(Ptr{T}(s.x), i)
 end
 
 IndexStyle(::Sparse) = IndexCartesian()
@@ -1180,7 +1046,7 @@ function getindex(A::Sparse{T}, i0::Integer, i1::Integer) where T
     (r1 > r2) && return zero(T)
     r1 = Int(searchsortedfirst(unsafe_wrap(Array, s.i, (s.nzmax,), own = false),
         i0 - 1, r1, r2, Base.Order.Forward))
-    ((r1 > r2) || (unsafe_load(s.i, r1) + 1 != i0)) ? zero(T) : unsafe_load(s.x, r1)
+    ((r1 > r2) || (unsafe_load(s.i, r1) + 1 != i0)) ? zero(T) : unsafe_load(Ptr{T}(s.x), r1)
 end
 
 @inline function getproperty(F::Factor, sym::Symbol)
@@ -1549,9 +1415,7 @@ function lowrankupdowndate!(F::Factor{Tv}, C::Sparse{Tv}, update::Cint) where Tv
     if lF.n != lC.nrow
         throw(DimensionMismatch("matrix dimensions do not fit"))
     end
-    ccall((@cholmod_name("updown"), :libcholmod), Cint,
-          (Cint, Ptr{C_Sparse{Tv}}, Ptr{C_Factor{Tv}}, Ptr{cholmod_common}),
-          update, C, F, COMMONS[Threads.threadid()])
+    cholmod_l_updown(update, C, F, COMMONS[Threads.threadid()])
     F
 end
 
@@ -1739,12 +1603,12 @@ end
 ## Other convenience methods
 function diag(F::Factor{Tv}) where Tv
     f = unsafe_load(pointer(F))
-    fsuper = f.super
-    fpi = f.pi
+    fsuper = Ptr{SuiteSparse_long}(f.super)
+    fpi = Ptr{SuiteSparse_long}(f.pi)
     res = Base.zeros(Tv, Int(f.n))
-    xv  = f.x
+    xv  = Ptr{Tv}(f.x)
     if f.is_super!=0
-        px = f.px
+        px = Ptr{SuiteSparse_long}(f.px)
         pos = 1
         for i in 1:f.nsuper
             base = unsafe_load(px, i) + 1
@@ -1757,9 +1621,9 @@ function diag(F::Factor{Tv}) where Tv
             end
         end
     else
-        c0 = f.p
-        r0 = f.i
-        xv = f.x
+        c0 = Ptr{SuiteSparse_long}(f.p)
+        r0 = Ptr{SuiteSparse_long}(f.i)
+        xv = Ptr{Tv}(f.x)
         for j in 1:f.n
             jj = unsafe_load(c0, j) + 1
             @assert(unsafe_load(r0, jj) == j - 1)
@@ -1811,7 +1675,7 @@ function ishermitian(A::Sparse{Float64})
             throw(CHOLMODException("negative value returned from CHOLMOD's symmetry function. This
                 is either because the indices are not sorted or because of a memory error"))
         end
-        return i == MM_SYMMETRIC || i == MM_SYMMETRIC_POSDIAG
+        return i == CHOLMOD_MM_SYMMETRIC || i == CHOLMOD_MM_SYMMETRIC_POSDIAG
     end
 end
 function ishermitian(A::Sparse{ComplexF64})
@@ -1824,7 +1688,7 @@ function ishermitian(A::Sparse{ComplexF64})
             throw(CHOLMODException("negative value returned from CHOLMOD's symmetry function. This
                 is either because the indices are not sorted or because of a memory error"))
         end
-        return i == MM_HERMITIAN || i == MM_HERMITIAN_POSDIAG
+        return i == CHOLMOD_MM_HERMITIAN || i == CHOLMOD_MM_HERMITIAN_POSDIAG
     end
 end
 

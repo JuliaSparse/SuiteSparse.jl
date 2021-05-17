@@ -12,7 +12,8 @@ using LinearAlgebra:
     PosDefException, ZeroPivotException
 using SparseArrays
 using SparseArrays: getcolptr
-using SuiteSparse.LibSuiteSparse: cholmod_l_allocate_sparse
+using SuiteSparse.LibSuiteSparse
+using SuiteSparse.LibSuiteSparse: SuiteSparse_long
 
 # CHOLMOD tests
 Random.seed!(123)
@@ -50,10 +51,10 @@ Random.seed!(123)
 
     n = 48
     A = CHOLMOD.Sparse(n, n,
-        CHOLMOD.SuiteSparse_long[0,1,2,3,6,9,12,15,18,20,25,30,34,36,39,43,47,52,58,
+        SuiteSparse_long[0,1,2,3,6,9,12,15,18,20,25,30,34,36,39,43,47,52,58,
         62,67,71,77,84,90,93,95,98,103,106,110,115,119,123,130,136,142,146,150,155,
         161,167,174,182,189,197,207,215,224], # zero-based column pointers
-        CHOLMOD.SuiteSparse_long[0,1,2,1,2,3,0,2,4,0,1,5,0,4,6,1,3,7,2,8,1,3,7,8,9,
+        SuiteSparse_long[0,1,2,1,2,3,0,2,4,0,1,5,0,4,6,1,3,7,2,8,1,3,7,8,9,
         0,4,6,8,10,5,6,7,11,6,12,7,11,13,8,10,13,14,9,13,14,15,8,10,12,14,16,7,11,
         12,13,16,17,0,12,16,18,1,5,13,15,19,2,4,14,20,3,13,15,19,20,21,2,4,12,16,18,
         20,22,1,5,17,18,19,23,0,5,24,1,25,2,3,26,2,3,25,26,27,4,24,28,0,5,24,29,6,
@@ -146,10 +147,10 @@ end
 
 @testset "lp_afiro example" begin
     afiro = CHOLMOD.Sparse(27, 51,
-        CHOLMOD.SuiteSparse_long[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+        SuiteSparse_long[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
         23,25,27,29,33,37,41,45,47,49,51,53,55,57,59,63,65,67,69,71,75,79,83,87,89,
         91,93,95,97,99,101,102],
-        CHOLMOD.SuiteSparse_long[2,3,6,7,8,9,12,13,16,17,18,19,20,21,22,23,24,25,26,
+        SuiteSparse_long[2,3,6,7,8,9,12,13,16,17,18,19,20,21,22,23,24,25,26,
         0,1,2,23,0,3,0,21,1,25,4,5,6,24,4,5,7,24,4,5,8,24,4,5,9,24,6,20,7,20,8,20,9,
         20,3,4,4,22,5,26,10,11,12,21,10,13,10,23,10,20,11,25,14,15,16,22,14,15,17,
         22,14,15,18,22,14,15,19,22,16,20,17,20,18,20,19,20,13,15,15,24,14,26,15],
@@ -160,7 +161,7 @@ end
         0.109,1.0,-1.0,1.0,-1.0,1.0,-1.0,1.0,1.0,-0.43,1.0,1.0,0.109,-0.43,1.0,1.0,
         0.108,-0.39,1.0,1.0,0.108,-0.37,1.0,1.0,0.107,-1.0,2.191,-1.0,2.219,-1.0,
         2.249,-1.0,2.279,1.4,-1.0,1.0,-1.0,1.0,1.0,1.0], 0)
-    afiro2 = CHOLMOD.aat(afiro, CHOLMOD.SuiteSparse_long[0:50;], CHOLMOD.SuiteSparse_long(1))
+    afiro2 = CHOLMOD.aat(afiro, SuiteSparse_long[0:50;], SuiteSparse_long(1))
     CHOLMOD.change_stype!(afiro2, -1)
     chmaf = cholesky(afiro2)
     y = afiro'*fill(1., size(afiro,1))
@@ -173,11 +174,11 @@ end
 @testset "Issue 9160" begin
     local A, B
     A = sprand(10, 10, 0.1)
-    A = convert(SparseMatrixCSC{Float64,CHOLMOD.SuiteSparse_long}, A)
+    A = convert(SparseMatrixCSC{Float64,SuiteSparse_long}, A)
     cmA = CHOLMOD.Sparse(A)
 
     B = sprand(10, 10, 0.1)
-    B = convert(SparseMatrixCSC{Float64,CHOLMOD.SuiteSparse_long}, B)
+    B = convert(SparseMatrixCSC{Float64,SuiteSparse_long}, B)
     cmB = CHOLMOD.Sparse(B)
 
     # Ac_mul_B
@@ -211,7 +212,7 @@ end
     @test ishermitian(Sparse(Hermitian(complex(ACSC), :U)))
 end
 
-@testset "test Sparse constructor for C_Sparse{Cvoid} (and read_sparse)" begin
+@testset "test Sparse constructor and read_sparse" begin
     mktempdir() do temp_dir
         testfile = joinpath(temp_dir, "tmp.mtx")
 
@@ -231,42 +232,37 @@ end
     end
 end
 
-@testset "test that Sparse(Ptr) constructor throws the right places" begin
-    @test_throws ArgumentError CHOLMOD.Sparse(convert(Ptr{CHOLMOD.C_Sparse{Float64}}, C_NULL))
-    @test_throws ArgumentError CHOLMOD.Sparse(convert(Ptr{CHOLMOD.C_Sparse{Cvoid}}, C_NULL))
-end
-
 ## The struct pointer must be constructed by the library constructor and then modified afterwards to checks that the method throws
 @testset "illegal dtype (for now but should be supported at some point)" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
-    unsafe_store!(puint, CHOLMOD.SINGLE, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
+    unsafe_store!(puint, CHOLMOD_SINGLE, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal dtype" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, 5, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 4)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal xtype" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint, 3, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 3)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal itype I" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
-    unsafe_store!(puint, CHOLMOD.INTLONG, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
+    unsafe_store!(puint, CHOLMOD_INTLONG, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
 end
 
 @testset "illegal itype II" begin
-    p::Ptr{CHOLMOD.C_Sparse{Cvoid}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     puint = convert(Ptr{UInt32}, p)
     unsafe_store!(puint,  5, 3*div(sizeof(Csize_t), 4) + 5*div(sizeof(Ptr{Cvoid}), 4) + 2)
     @test_throws CHOLMOD.CHOLMODException CHOLMOD.Sparse(p)
@@ -315,7 +311,7 @@ end
 
 # Test Sparse and Factor
 @testset "test free!" begin
-    p::Ptr{CHOLMOD.C_Sparse{Float64}} = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD.REAL, CHOLMOD.COMMONS[Threads.threadid()])
+    p = cholmod_l_allocate_sparse(1, 1, 1, true, true, 0, CHOLMOD_REAL, CHOLMOD.COMMONS[Threads.threadid()])
     @test CHOLMOD.free!(p)
 end
 
@@ -466,16 +462,16 @@ end
         @test CHOLMOD.horzcat(A1Sparse, A2Sparse, true) == [A1 A2]
         @test CHOLMOD.vertcat(A1Sparse, A2Sparse, true) == [A1; A2]
         svec = fill(elty(1), 1)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SCALAR, A1Sparse) == A1Sparse
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD_SCALAR, A1Sparse) == A1Sparse
         svec = fill(elty(1), 5)
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SCALAR, A1Sparse)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.ROW, A1Sparse) == A1Sparse
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.ROW, A1Sparse)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.COL, A1Sparse) == A1Sparse
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.COL, A1Sparse)
-        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SYM, A1Sparse) == A1Sparse
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD.SYM, A1Sparse)
-        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD.SYM, CHOLMOD.Sparse(A1[:,1:4]))
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD_SCALAR, A1Sparse)
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD_ROW, A1Sparse) == A1Sparse
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD_ROW, A1Sparse)
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD_COL, A1Sparse) == A1Sparse
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD_COL, A1Sparse)
+        @test CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD_SYM, A1Sparse) == A1Sparse
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense([svec; 1]), CHOLMOD_SYM, A1Sparse)
+        @test_throws DimensionMismatch CHOLMOD.scale!(CHOLMOD.Dense(svec), CHOLMOD_SYM, CHOLMOD.Sparse(A1[:,1:4]))
     else
         @test_throws MethodError CHOLMOD.copy(A1Sparse, 0, 1) == A1Sparse
         @test_throws MethodError CHOLMOD.horzcat(A1Sparse, A2Sparse, true) == [A1 A2]
@@ -762,7 +758,7 @@ end
     B = CHOLMOD.Sparse(A)
     C = B'B
     # Change internal representation to symmetric (upper/lower)
-    o = fieldoffset(CHOLMOD.C_Sparse{eltype(C)}, findall(fieldnames(CHOLMOD.C_Sparse{eltype(C)}) .== :stype)[1])
+    o = fieldoffset(cholmod_sparse, findall(fieldnames(cholmod_sparse) .== :stype)[1])
     for uplo in (1, -1)
         unsafe_store!(Ptr{Int8}(pointer(C)), uplo, Int(o) + 1)
         @test convert(Symmetric{Float64,SparseMatrixCSC{Float64,Int}}, C) ≈ Symmetric(A'A)
@@ -770,10 +766,10 @@ end
 end
 
 @testset "Check inputs to Sparse. Related to #20024" for t_ in (
-    (2, 2, [1, 2], CHOLMOD.SuiteSparse_long[], Float64[]),
-    (2, 2, [1, 2, 3], CHOLMOD.SuiteSparse_long[1], Float64[]),
-    (2, 2, [1, 2, 3], CHOLMOD.SuiteSparse_long[], Float64[1.0]),
-    (2, 2, [1, 2, 3], CHOLMOD.SuiteSparse_long[1], Float64[1.0]))
+    (2, 2, [1, 2], SuiteSparse_long[], Float64[]),
+    (2, 2, [1, 2, 3], SuiteSparse_long[1], Float64[]),
+    (2, 2, [1, 2, 3], SuiteSparse_long[], Float64[1.0]),
+    (2, 2, [1, 2, 3], SuiteSparse_long[1], Float64[1.0]))
     @test_throws ArgumentError SparseMatrixCSC(t_...)
     @test_throws ArgumentError CHOLMOD.Sparse(t_[1], t_[2], t_[3] .- 1, t_[4] .- 1, t_[5])
 end
@@ -789,7 +785,7 @@ end
 end
 
 @testset "Test sparse low rank update for cholesky decomposion" begin
-    A = SparseMatrixCSC{Float64,CHOLMOD.SuiteSparse_long}(10, 5, [1,3,6,8,10,13], [6,7,1,2,9,3,5,1,7,6,7,9],
+    A = SparseMatrixCSC{Float64,SuiteSparse_long}(10, 5, [1,3,6,8,10,13], [6,7,1,2,9,3,5,1,7,6,7,9],
         [-0.138843, 2.99571, -0.556814, 0.669704, -1.39252, 1.33814,
         1.02371, -0.502384, 1.10686, 0.262229, -1.6935, 0.525239])
     AtA = A'*A
@@ -906,8 +902,8 @@ end
 @testset "Check common is still in default state" begin
     # This test intentially depends on all the above tests!
     current_common = CHOLMOD.COMMONS[Threads.threadid()]
-    default_common = Ref(CHOLMOD.cholmod_common())
-    result = CHOLMOD.cholmod_l_start(default_common)
+    default_common = Ref(cholmod_common())
+    result = cholmod_l_start(default_common)
     @test result == CHOLMOD.TRUE
     @test current_common[].print == 0
     for name in (

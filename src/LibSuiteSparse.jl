@@ -2,8 +2,6 @@ module LibSuiteSparse
 
 using SuiteSparse_jll
 
-const IS_LIBC_MUSL = occursin("musl", Base.BUILD_TRIPLET)
-
 # patches
 const LONG_MAX = typemax(Clong)
 if Sys.iswindows() && Sys.ARCH === :x86_64
@@ -14,6 +12,7 @@ end
 const TRUE  = Int32(1)
 const FALSE = Int32(0)
 
+const IS_LIBC_MUSL = occursin("musl", Base.BUILD_TRIPLET)
 if Sys.isapple() && Sys.ARCH === :aarch64
     include("../lib/aarch64-apple-darwin20.jl")
 elseif Sys.islinux() && Sys.ARCH === :aarch64 && !IS_LIBC_MUSL
@@ -44,6 +43,14 @@ elseif Sys.iswindows() && Sys.ARCH === :x86_64
     include("../lib/x86_64-w64-mingw32.jl")
 else
     error("Unknown platform: $(Base.BUILD_TRIPLET)")
+end
+
+# exports
+const PREFIXES = ["cholmod_", "CHOLMOD_"]
+for name in names(@__MODULE__; all=true), prefix in PREFIXES
+    if startswith(string(name), prefix)
+        @eval export $name
+    end
 end
 
 end # module
