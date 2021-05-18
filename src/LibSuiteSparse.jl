@@ -6,6 +6,7 @@ using SuiteSparse_jll
 const LONG_MAX = typemax(Clong)
 if Sys.iswindows() && Sys.ARCH === :x86_64
     const __int64 = Int64
+    const _I64_MAX = typemax(Int64)
 end
 
 ## CHOLMOD
