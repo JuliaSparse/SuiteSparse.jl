@@ -336,8 +336,6 @@ mutable struct Factor{Tv<:VTypes} <: Factorization{Tv}
         return F
     end
 end
-Factor(ptr::Ptr{cholmod_factor}) where {Tv<:VTypes} = Factor{Tv}(ptr)
-Factor(x::Factor) = x
 
 Base.adjoint(F::Factor) = Adjoint(F)
 Base.transpose(F::Factor) = Transpose(F)
@@ -384,7 +382,7 @@ function FactorComponent(F::Factor{Tv}, sym::Symbol) where Tv
     FactorComponent{Tv,sym}(F)
 end
 
-Factor(FC::FactorComponent) = Factor(FC.F)
+Factor(FC::FactorComponent) = FC.F
 
 #################
 # Thin wrappers #
