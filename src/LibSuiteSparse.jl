@@ -1,6 +1,9 @@
 module LibSuiteSparse
 
-using SuiteSparse_jll
+# using SuiteSparse_jll (move to this when stdlibs have full support for jlls)
+const libumfpack = :libumfpack
+const libcholmod = :libcholmod
+const libspqr = :libspqr
 
 # patches
 const LONG_MAX = typemax(Clong)
