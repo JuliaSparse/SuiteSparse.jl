@@ -4,6 +4,7 @@ using Test, Random
 using SuiteSparse, LinearAlgebra, SparseArrays
 
 if Base.USE_GPL_LIBS
+    include("ambiguous.jl")
     include("umfpack.jl")
     include("cholmod.jl")
     include("spqr.jl")
