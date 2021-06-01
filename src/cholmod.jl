@@ -1583,7 +1583,6 @@ function \(A::RealHermSymComplexHermF64SSL, B::StridedVecOrMatInclAdjAndTrans)
         end
     end
 end
-\(adjA::Adjoint{<:Any,<:RealHermSymComplexHermF64SSL}, B::StridedVecOrMatInclAdjAndTrans) = parent(adjA)\B
 
 ## Other convenience methods
 function diag(F::Factor{Tv}) where Tv
