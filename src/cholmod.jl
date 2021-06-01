@@ -1583,20 +1583,7 @@ function \(A::RealHermSymComplexHermF64SSL, B::StridedVecOrMatInclAdjAndTrans)
         end
     end
 end
-function \(adjA::Adjoint{<:Any,<:RealHermSymComplexHermF64SSL}, B::StridedVecOrMatInclAdjAndTrans)
-    A = adjA.parent
-    F = cholesky(A; check = false)
-    if issuccess(F)
-        return \(adjoint(F), B)
-    else
-        ldlt!(F, A; check = false)
-        if issuccess(F)
-            return \(adjoint(F), B)
-        else
-            return \(adjoint(lu(SparseMatrixCSC{eltype(A), SuiteSparse_long}(A))), B)
-        end
-    end
-end
+\(adjA::Adjoint{<:Any,<:RealHermSymComplexHermF64SSL}, B::StridedVecOrMatInclAdjAndTrans) = parent(adjA)\B
 
 ## Other convenience methods
 function diag(F::Factor{Tv}) where Tv
