@@ -28,7 +28,6 @@ if Base.USE_GPL_LIBS
     include("umfpack.jl")
     include("cholmod.jl")
     include("spqr.jl")
-    include("deprecated.jl")
 end
 
 end # module SuiteSparse
