@@ -16,4 +16,4 @@
 [codecov-img]: https://codecov.io/gh/JuliaLang/SuiteSparse.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/JuliaLang/SuiteSparse.jl
 
-
+This package ships as part of the Julia stdlib.
