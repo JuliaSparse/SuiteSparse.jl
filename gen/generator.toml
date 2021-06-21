@@ -6,7 +6,7 @@ use_julia_native_enum_type = true
 use_deterministic_symbol = true
 auto_mutability = true
 
-printer_blacklist = [
+printer_denylist = [
     # Clang.jl cannot handle these macro correctly, skip for now.
     "SuiteSparse_long_id",  
     "CHOLMOD_CUBLAS_HANDLE",
@@ -39,7 +39,7 @@ use_ccall_macro = true
 [codegen.macro]
 macro_mode = "basic"
 
-functionlike_macro_whitelist = [
+functionlike_macro_allowlist = [
     "SUITESPARSE_VER_CODE",
     "CHOLMOD_VER_CODE",
     "SPQR_VER_CODE",
