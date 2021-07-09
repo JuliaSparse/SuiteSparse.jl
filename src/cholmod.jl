@@ -182,7 +182,7 @@ function __init__()
                 from www.julialang.org, which ship with the correct
                 versions of all dependencies.
                 """
-        elseif BUILD_VERSION != current_version
+        elseif BUILD_VERSION.major != current_version.major
             @warn """
                 CHOLMOD version incompatibility
 
