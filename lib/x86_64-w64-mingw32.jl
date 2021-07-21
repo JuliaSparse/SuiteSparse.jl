@@ -3223,6 +3223,8 @@ const UMFPACK_Uat = 14
 
 const COLAMD_DATE = "May 4, 2016"
 
+COLAMD_VERSION_CODE(main, sub) = main * 1000 + sub
+
 const COLAMD_MAIN_VERSION = 2
 
 const COLAMD_SUB_VERSION = 9
@@ -3279,6 +3281,8 @@ const COLAMD_ERROR_internal_error = -999
 
 const BTF_DATE = "May 4, 2016"
 
+BTF_VERSION_CODE(main, sub) = main * 1000 + sub
+
 const BTF_MAIN_VERSION = 1
 
 const BTF_SUB_VERSION = 2
@@ -3298,6 +3302,8 @@ const KLU_INVALID = -3
 const KLU_TOO_LARGE = -4
 
 const KLU_DATE = "Mar 12, 2018"
+
+KLU_VERSION_CODE(main, sub) = main * 1000 + sub
 
 const KLU_MAIN_VERSION = 1
 

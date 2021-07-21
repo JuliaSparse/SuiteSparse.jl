@@ -45,4 +45,7 @@ functionlike_macro_whitelist = [
     "SPQR_VER_CODE",
     "AMD_VERSION_CODE",
     "UMFPACK_VER_CODE",
+    "COLAMD_VERSION_CODE",
+    "KLU_VERSION_CODE",
+    "BTF_VERSION_CODE"
 ]
