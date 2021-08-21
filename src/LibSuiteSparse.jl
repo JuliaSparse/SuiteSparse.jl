@@ -16,6 +16,8 @@ end
 const TRUE  = Int32(1)
 const FALSE = Int32(0)
 
+CCOLAMD_VERSION_CODE(main, sub) = main * 1000 + sub
+
 const IS_LIBC_MUSL = occursin("musl", Base.BUILD_TRIPLET)
 if Sys.isapple() && Sys.ARCH === :aarch64
     include("../lib/aarch64-apple-darwin20.jl")
@@ -42,7 +44,7 @@ elseif Sys.islinux() && Sys.ARCH === :x86_64 && !IS_LIBC_MUSL
 elseif Sys.islinux() && Sys.ARCH === :x86_64 && IS_LIBC_MUSL
     include("../lib/x86_64-linux-musl.jl")
 elseif Sys.isbsd() && !Sys.isapple()
-    include("../lib/x86_64-unknown-freebsd11.1.jl")
+    include("../lib/x86_64-unknown-freebsd12.2.jl")
 elseif Sys.iswindows() && Sys.ARCH === :x86_64
     include("../lib/x86_64-w64-mingw32.jl")
 else
