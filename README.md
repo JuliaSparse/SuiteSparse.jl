@@ -17,3 +17,5 @@
 [codecov-url]: https://codecov.io/gh/JuliaLang/SuiteSparse.jl
 
 This package ships as part of the Julia stdlib.
+
+SuiteSparse.jl provides Julia wrappers for the [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) library, and provides Julia's sparse linear algebra capabilities - specifically the solvers.
