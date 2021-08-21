@@ -973,27 +973,27 @@ function cholmod_l_write_dense(arg1, arg2, arg3, arg4)
 end
 
 function cholmod_ccolamd(A, fset, fsize, Cmember, Perm, Common)
-    @ccall libamd.cholmod_ccolamd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
+    @ccall libcholmod.cholmod_ccolamd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_l_ccolamd(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libamd.cholmod_l_ccolamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clonglong}, arg3::Csize_t, arg4::Ptr{Clonglong}, arg5::Ptr{Clonglong}, arg6::Ptr{cholmod_common})::Cint
+    @ccall libcholmod.cholmod_l_ccolamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clonglong}, arg3::Csize_t, arg4::Ptr{Clonglong}, arg5::Ptr{Clonglong}, arg6::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_csymamd(A, Cmember, Perm, Common)
-    @ccall libamd.cholmod_csymamd(A::Ptr{cholmod_sparse}, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
+    @ccall libcholmod.cholmod_csymamd(A::Ptr{cholmod_sparse}, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_l_csymamd(arg1, arg2, arg3, arg4)
-    @ccall libamd.cholmod_l_csymamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clonglong}, arg3::Ptr{Clonglong}, arg4::Ptr{cholmod_common})::Cint
+    @ccall libcholmod.cholmod_l_csymamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clonglong}, arg3::Ptr{Clonglong}, arg4::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_camd(A, fset, fsize, Cmember, Perm, Common)
-    @ccall libamd.cholmod_camd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
+    @ccall libcholmod.cholmod_camd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_l_camd(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libamd.cholmod_l_camd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clonglong}, arg3::Csize_t, arg4::Ptr{Clonglong}, arg5::Ptr{Clonglong}, arg6::Ptr{cholmod_common})::Cint
+    @ccall libcholmod.cholmod_l_camd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clonglong}, arg3::Csize_t, arg4::Ptr{Clonglong}, arg5::Ptr{Clonglong}, arg6::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_nested_dissection(A, fset, fsize, Perm, CParent, Cmember, Common)
