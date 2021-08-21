@@ -51,7 +51,7 @@ for target in JLLEnvs.JLL_ENV_TRIPLES
         push!(args, "-DSUN64 -DLONGBLAS='long long'")
     end
 
-    header_files = [cholmod_h, cholmod_blas_h, SuiteSparseQR_C_h, umfpack_h, klu_h, amd_h, colamd_h, ccolamd_h]
+    header_files = [cholmod_h, cholmod_blas_h, SuiteSparseQR_C_h, klu_h, amd_h, colamd_h, ccolamd_h, umfpack_h]
 
     ctx = create_context(header_files, args, options)
 

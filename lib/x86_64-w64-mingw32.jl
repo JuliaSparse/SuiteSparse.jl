@@ -1544,498 +1544,6 @@ function SuiteSparseQR_C_qmult(method, QR, X, cc)
     @ccall libspqr.SuiteSparseQR_C_qmult(method::Cint, QR::Ptr{SuiteSparseQR_C_factorization}, X::Ptr{cholmod_dense}, cc::Ptr{cholmod_common})::Ptr{cholmod_dense}
 end
 
-function umfpack_di_symbolic(n_row, n_col, Ap, Ai, Ax, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_di_symbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_symbolic(n_row, n_col, Ap, Ai, Ax, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_dl_symbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_symbolic(n_row, n_col, Ap, Ai, Ax, Az, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_zi_symbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_symbolic(n_row, n_col, Ap, Ai, Ax, Az, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_zl_symbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_numeric(Ap, Ai, Ax, Symbolic, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_di_numeric(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_numeric(Ap, Ai, Ax, Symbolic, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_dl_numeric(Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_numeric(Ap, Ai, Ax, Az, Symbolic, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_zi_numeric(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_numeric(Ap, Ai, Ax, Az, Symbolic, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_zl_numeric(Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_solve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_di_solve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_solve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_dl_solve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_solve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_zi_solve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_solve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info)
-    @ccall libumfpack.umfpack_zl_solve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_free_symbolic(Symbolic)
-    @ccall libumfpack.umfpack_di_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_dl_free_symbolic(Symbolic)
-    @ccall libumfpack.umfpack_dl_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_zi_free_symbolic(Symbolic)
-    @ccall libumfpack.umfpack_zi_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_zl_free_symbolic(Symbolic)
-    @ccall libumfpack.umfpack_zl_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_di_free_numeric(Numeric)
-    @ccall libumfpack.umfpack_di_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_dl_free_numeric(Numeric)
-    @ccall libumfpack.umfpack_dl_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_zi_free_numeric(Numeric)
-    @ccall libumfpack.umfpack_zi_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_zl_free_numeric(Numeric)
-    @ccall libumfpack.umfpack_zl_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
-end
-
-function umfpack_di_defaults(Control)
-    @ccall libumfpack.umfpack_di_defaults(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_dl_defaults(Control)
-    @ccall libumfpack.umfpack_dl_defaults(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_zi_defaults(Control)
-    @ccall libumfpack.umfpack_zi_defaults(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_zl_defaults(Control)
-    @ccall libumfpack.umfpack_zl_defaults(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_di_qsymbolic(n_row, n_col, Ap, Ai, Ax, Qinit, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_di_qsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Qinit::Ptr{Cint}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_qsymbolic(n_row, n_col, Ap, Ai, Ax, Qinit, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_dl_qsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Qinit::Ptr{Clonglong}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_qsymbolic(n_row, n_col, Ap, Ai, Ax, Az, Qinit, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_zi_qsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Qinit::Ptr{Cint}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_qsymbolic(n_row, n_col, Ap, Ai, Ax, Az, Qinit, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_zl_qsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Qinit::Ptr{Clonglong}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_fsymbolic(n_row, n_col, Ap, Ai, Ax, user_ordering, user_params, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_di_fsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_fsymbolic(n_row, n_col, Ap, Ai, Ax, user_ordering, user_params, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_dl_fsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_fsymbolic(n_row, n_col, Ap, Ai, Ax, Az, user_ordering, user_params, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_zi_fsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_fsymbolic(n_row, n_col, Ap, Ai, Ax, Az, user_ordering, user_params, Symbolic, Control, Info)
-    @ccall libumfpack.umfpack_zl_fsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_wsolve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info, Wi, W)
-    @ccall libumfpack.umfpack_di_wsolve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Cint}, W::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_wsolve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info, Wi, W)
-    @ccall libumfpack.umfpack_dl_wsolve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Clonglong}, W::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_wsolve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info, Wi, W)
-    @ccall libumfpack.umfpack_zi_wsolve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Cint}, W::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_wsolve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info, Wi, W)
-    @ccall libumfpack.umfpack_zl_wsolve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Clonglong}, W::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Ap, Ai, Ax, Map)
-    @ccall libumfpack.umfpack_di_triplet_to_col(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Map::Ptr{Cint})::Cint
-end
-
-function umfpack_dl_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Ap, Ai, Ax, Map)
-    @ccall libumfpack.umfpack_dl_triplet_to_col(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Map::Ptr{Clonglong})::Clonglong
-end
-
-function umfpack_zi_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Tz, Ap, Ai, Ax, Az, Map)
-    @ccall libumfpack.umfpack_zi_triplet_to_col(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Map::Ptr{Cint})::Cint
-end
-
-function umfpack_zl_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Tz, Ap, Ai, Ax, Az, Map)
-    @ccall libumfpack.umfpack_zl_triplet_to_col(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Map::Ptr{Clonglong})::Clonglong
-end
-
-function umfpack_di_col_to_triplet(n_col, Ap, Tj)
-    @ccall libumfpack.umfpack_di_col_to_triplet(n_col::Cint, Ap::Ptr{Cint}, Tj::Ptr{Cint})::Cint
-end
-
-function umfpack_dl_col_to_triplet(n_col, Ap, Tj)
-    @ccall libumfpack.umfpack_dl_col_to_triplet(n_col::Clonglong, Ap::Ptr{Clonglong}, Tj::Ptr{Clonglong})::Clonglong
-end
-
-function umfpack_zi_col_to_triplet(n_col, Ap, Tj)
-    @ccall libumfpack.umfpack_zi_col_to_triplet(n_col::Cint, Ap::Ptr{Cint}, Tj::Ptr{Cint})::Cint
-end
-
-function umfpack_zl_col_to_triplet(n_col, Ap, Tj)
-    @ccall libumfpack.umfpack_zl_col_to_triplet(n_col::Clonglong, Ap::Ptr{Clonglong}, Tj::Ptr{Clonglong})::Clonglong
-end
-
-function umfpack_di_transpose(n_row, n_col, Ap, Ai, Ax, P, Q, Rp, Ri, Rx)
-    @ccall libumfpack.umfpack_di_transpose(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rp::Ptr{Cint}, Ri::Ptr{Cint}, Rx::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_transpose(n_row, n_col, Ap, Ai, Ax, P, Q, Rp, Ri, Rx)
-    @ccall libumfpack.umfpack_dl_transpose(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Rp::Ptr{Clonglong}, Ri::Ptr{Clonglong}, Rx::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_transpose(n_row, n_col, Ap, Ai, Ax, Az, P, Q, Rp, Ri, Rx, Rz, do_conjugate)
-    @ccall libumfpack.umfpack_zi_transpose(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rp::Ptr{Cint}, Ri::Ptr{Cint}, Rx::Ptr{Cdouble}, Rz::Ptr{Cdouble}, do_conjugate::Cint)::Cint
-end
-
-function umfpack_zl_transpose(n_row, n_col, Ap, Ai, Ax, Az, P, Q, Rp, Ri, Rx, Rz, do_conjugate)
-    @ccall libumfpack.umfpack_zl_transpose(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Rp::Ptr{Clonglong}, Ri::Ptr{Clonglong}, Rx::Ptr{Cdouble}, Rz::Ptr{Cdouble}, do_conjugate::Clonglong)::Clonglong
-end
-
-function umfpack_di_scale(X, B, Numeric)
-    @ccall libumfpack.umfpack_di_scale(X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
-end
-
-function umfpack_dl_scale(X, B, Numeric)
-    @ccall libumfpack.umfpack_dl_scale(X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_zi_scale(Xx, Xz, Bx, Bz, Numeric)
-    @ccall libumfpack.umfpack_zi_scale(Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
-end
-
-function umfpack_zl_scale(Xx, Xz, Bx, Bz, Numeric)
-    @ccall libumfpack.umfpack_zl_scale(Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_di_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
-    @ccall libumfpack.umfpack_di_get_lunz(lnz::Ptr{Cint}, unz::Ptr{Cint}, n_row::Ptr{Cint}, n_col::Ptr{Cint}, nz_udiag::Ptr{Cint}, Numeric::Ptr{Cvoid})::Cint
-end
-
-function umfpack_dl_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
-    @ccall libumfpack.umfpack_dl_get_lunz(lnz::Ptr{Clonglong}, unz::Ptr{Clonglong}, n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, nz_udiag::Ptr{Clonglong}, Numeric::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_zi_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
-    @ccall libumfpack.umfpack_zi_get_lunz(lnz::Ptr{Cint}, unz::Ptr{Cint}, n_row::Ptr{Cint}, n_col::Ptr{Cint}, nz_udiag::Ptr{Cint}, Numeric::Ptr{Cvoid})::Cint
-end
-
-function umfpack_zl_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
-    @ccall libumfpack.umfpack_zl_get_lunz(lnz::Ptr{Clonglong}, unz::Ptr{Clonglong}, n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, nz_udiag::Ptr{Clonglong}, Numeric::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_di_get_numeric(Lp, Lj, Lx, Up, Ui, Ux, P, Q, Dx, do_recip, Rs, Numeric)
-    @ccall libumfpack.umfpack_di_get_numeric(Lp::Ptr{Cint}, Lj::Ptr{Cint}, Lx::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Dx::Ptr{Cdouble}, do_recip::Ptr{Cint}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
-end
-
-function umfpack_dl_get_numeric(Lp, Lj, Lx, Up, Ui, Ux, P, Q, Dx, do_recip, Rs, Numeric)
-    @ccall libumfpack.umfpack_dl_get_numeric(Lp::Ptr{Clonglong}, Lj::Ptr{Clonglong}, Lx::Ptr{Cdouble}, Up::Ptr{Clonglong}, Ui::Ptr{Clonglong}, Ux::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Dx::Ptr{Cdouble}, do_recip::Ptr{Clonglong}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_zi_get_numeric(Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q, Dx, Dz, do_recip, Rs, Numeric)
-    @ccall libumfpack.umfpack_zi_get_numeric(Lp::Ptr{Cint}, Lj::Ptr{Cint}, Lx::Ptr{Cdouble}, Lz::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, Uz::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Dx::Ptr{Cdouble}, Dz::Ptr{Cdouble}, do_recip::Ptr{Cint}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
-end
-
-function umfpack_zl_get_numeric(Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q, Dx, Dz, do_recip, Rs, Numeric)
-    @ccall libumfpack.umfpack_zl_get_numeric(Lp::Ptr{Clonglong}, Lj::Ptr{Clonglong}, Lx::Ptr{Cdouble}, Lz::Ptr{Cdouble}, Up::Ptr{Clonglong}, Ui::Ptr{Clonglong}, Ux::Ptr{Cdouble}, Uz::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Dx::Ptr{Cdouble}, Dz::Ptr{Cdouble}, do_recip::Ptr{Clonglong}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_di_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
-    @ccall libumfpack.umfpack_di_get_symbolic(n_row::Ptr{Cint}, n_col::Ptr{Cint}, n1::Ptr{Cint}, nz::Ptr{Cint}, nfr::Ptr{Cint}, nchains::Ptr{Cint}, P::Ptr{Cint}, Q::Ptr{Cint}, Front_npivcol::Ptr{Cint}, Front_parent::Ptr{Cint}, Front_1strow::Ptr{Cint}, Front_leftmostdesc::Ptr{Cint}, Chain_start::Ptr{Cint}, Chain_maxrows::Ptr{Cint}, Chain_maxcols::Ptr{Cint}, Symbolic::Ptr{Cvoid})::Cint
-end
-
-function umfpack_dl_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
-    @ccall libumfpack.umfpack_dl_get_symbolic(n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, n1::Ptr{Clonglong}, nz::Ptr{Clonglong}, nfr::Ptr{Clonglong}, nchains::Ptr{Clonglong}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Front_npivcol::Ptr{Clonglong}, Front_parent::Ptr{Clonglong}, Front_1strow::Ptr{Clonglong}, Front_leftmostdesc::Ptr{Clonglong}, Chain_start::Ptr{Clonglong}, Chain_maxrows::Ptr{Clonglong}, Chain_maxcols::Ptr{Clonglong}, Symbolic::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_zi_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
-    @ccall libumfpack.umfpack_zi_get_symbolic(n_row::Ptr{Cint}, n_col::Ptr{Cint}, n1::Ptr{Cint}, nz::Ptr{Cint}, nfr::Ptr{Cint}, nchains::Ptr{Cint}, P::Ptr{Cint}, Q::Ptr{Cint}, Front_npivcol::Ptr{Cint}, Front_parent::Ptr{Cint}, Front_1strow::Ptr{Cint}, Front_leftmostdesc::Ptr{Cint}, Chain_start::Ptr{Cint}, Chain_maxrows::Ptr{Cint}, Chain_maxcols::Ptr{Cint}, Symbolic::Ptr{Cvoid})::Cint
-end
-
-function umfpack_zl_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
-    @ccall libumfpack.umfpack_zl_get_symbolic(n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, n1::Ptr{Clonglong}, nz::Ptr{Clonglong}, nfr::Ptr{Clonglong}, nchains::Ptr{Clonglong}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Front_npivcol::Ptr{Clonglong}, Front_parent::Ptr{Clonglong}, Front_1strow::Ptr{Clonglong}, Front_leftmostdesc::Ptr{Clonglong}, Chain_start::Ptr{Clonglong}, Chain_maxrows::Ptr{Clonglong}, Chain_maxcols::Ptr{Clonglong}, Symbolic::Ptr{Cvoid})::Clonglong
-end
-
-function umfpack_di_save_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_di_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_dl_save_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_dl_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_zi_save_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_zi_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_zl_save_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_zl_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_di_load_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_di_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_dl_load_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_dl_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_zi_load_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_zi_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_zl_load_numeric(Numeric, filename)
-    @ccall libumfpack.umfpack_zl_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_di_save_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_di_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_dl_save_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_dl_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_zi_save_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_zi_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_zl_save_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_zl_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_di_load_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_di_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_dl_load_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_dl_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_zi_load_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_zi_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
-end
-
-function umfpack_zl_load_symbolic(Symbolic, filename)
-    @ccall libumfpack.umfpack_zl_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
-end
-
-function umfpack_di_get_determinant(Mx, Ex, NumericHandle, User_Info)
-    @ccall libumfpack.umfpack_di_get_determinant(Mx::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_get_determinant(Mx, Ex, NumericHandle, User_Info)
-    @ccall libumfpack.umfpack_dl_get_determinant(Mx::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_get_determinant(Mx, Mz, Ex, NumericHandle, User_Info)
-    @ccall libumfpack.umfpack_zi_get_determinant(Mx::Ptr{Cdouble}, Mz::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_get_determinant(Mx, Mz, Ex, NumericHandle, User_Info)
-    @ccall libumfpack.umfpack_zl_get_determinant(Mx::Ptr{Cdouble}, Mz::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_report_status(Control, status)
-    @ccall libumfpack.umfpack_di_report_status(Control::Ptr{Cdouble}, status::Cint)::Cvoid
-end
-
-function umfpack_dl_report_status(Control, status)
-    @ccall libumfpack.umfpack_dl_report_status(Control::Ptr{Cdouble}, status::Clonglong)::Cvoid
-end
-
-function umfpack_zi_report_status(Control, status)
-    @ccall libumfpack.umfpack_zi_report_status(Control::Ptr{Cdouble}, status::Cint)::Cvoid
-end
-
-function umfpack_zl_report_status(Control, status)
-    @ccall libumfpack.umfpack_zl_report_status(Control::Ptr{Cdouble}, status::Clonglong)::Cvoid
-end
-
-function umfpack_di_report_info(Control, Info)
-    @ccall libumfpack.umfpack_di_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_dl_report_info(Control, Info)
-    @ccall libumfpack.umfpack_dl_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_zi_report_info(Control, Info)
-    @ccall libumfpack.umfpack_zi_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_zl_report_info(Control, Info)
-    @ccall libumfpack.umfpack_zl_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_di_report_control(Control)
-    @ccall libumfpack.umfpack_di_report_control(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_dl_report_control(Control)
-    @ccall libumfpack.umfpack_dl_report_control(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_zi_report_control(Control)
-    @ccall libumfpack.umfpack_zi_report_control(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_zl_report_control(Control)
-    @ccall libumfpack.umfpack_zl_report_control(Control::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_di_report_matrix(n_row, n_col, Ap, Ai, Ax, col_form, Control)
-    @ccall libumfpack.umfpack_di_report_matrix(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, col_form::Cint, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_report_matrix(n_row, n_col, Ap, Ai, Ax, col_form, Control)
-    @ccall libumfpack.umfpack_dl_report_matrix(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, col_form::Clonglong, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_report_matrix(n_row, n_col, Ap, Ai, Ax, Az, col_form, Control)
-    @ccall libumfpack.umfpack_zi_report_matrix(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, col_form::Cint, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_report_matrix(n_row, n_col, Ap, Ai, Ax, Az, col_form, Control)
-    @ccall libumfpack.umfpack_zl_report_matrix(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, col_form::Clonglong, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Control)
-    @ccall libumfpack.umfpack_di_report_triplet(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Control)
-    @ccall libumfpack.umfpack_dl_report_triplet(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Tz, Control)
-    @ccall libumfpack.umfpack_zi_report_triplet(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Tz, Control)
-    @ccall libumfpack.umfpack_zl_report_triplet(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_report_vector(n, X, Control)
-    @ccall libumfpack.umfpack_di_report_vector(n::Cint, X::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_report_vector(n, X, Control)
-    @ccall libumfpack.umfpack_dl_report_vector(n::Clonglong, X::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_report_vector(n, Xx, Xz, Control)
-    @ccall libumfpack.umfpack_zi_report_vector(n::Cint, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_report_vector(n, Xx, Xz, Control)
-    @ccall libumfpack.umfpack_zl_report_vector(n::Clonglong, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_report_symbolic(Symbolic, Control)
-    @ccall libumfpack.umfpack_di_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_report_symbolic(Symbolic, Control)
-    @ccall libumfpack.umfpack_dl_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_report_symbolic(Symbolic, Control)
-    @ccall libumfpack.umfpack_zi_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_report_symbolic(Symbolic, Control)
-    @ccall libumfpack.umfpack_zl_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_report_numeric(Numeric, Control)
-    @ccall libumfpack.umfpack_di_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_report_numeric(Numeric, Control)
-    @ccall libumfpack.umfpack_dl_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_report_numeric(Numeric, Control)
-    @ccall libumfpack.umfpack_zi_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_report_numeric(Numeric, Control)
-    @ccall libumfpack.umfpack_zl_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_di_report_perm(np, Perm, Control)
-    @ccall libumfpack.umfpack_di_report_perm(np::Cint, Perm::Ptr{Cint}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_dl_report_perm(np, Perm, Control)
-    @ccall libumfpack.umfpack_dl_report_perm(np::Clonglong, Perm::Ptr{Clonglong}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_zi_report_perm(np, Perm, Control)
-    @ccall libumfpack.umfpack_zi_report_perm(np::Cint, Perm::Ptr{Cint}, Control::Ptr{Cdouble})::Cint
-end
-
-function umfpack_zl_report_perm(np, Perm, Control)
-    @ccall libumfpack.umfpack_zl_report_perm(np::Clonglong, Perm::Ptr{Clonglong}, Control::Ptr{Cdouble})::Clonglong
-end
-
-function umfpack_timer()
-    @ccall libumfpack.umfpack_timer()::Cdouble
-end
-
-function umfpack_tic(stats)
-    @ccall libumfpack.umfpack_tic(stats::Ptr{Cdouble})::Cvoid
-end
-
-function umfpack_toc(stats)
-    @ccall libumfpack.umfpack_toc(stats::Ptr{Cdouble})::Cvoid
-end
-
 function btf_maxtrans(nrow, ncol, Ap, Ai, maxwork, work, Match, Work)
     @ccall libcholmod.btf_maxtrans(nrow::Cint, ncol::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, maxwork::Cdouble, work::Ptr{Cdouble}, Match::Ptr{Cint}, Work::Ptr{Cint})::Cint
 end
@@ -2648,6 +2156,498 @@ function ccolamd_l_post_tree(root, k, Child, Sibling, Order, Stack)
     @ccall libcolamd.ccolamd_l_post_tree(root::Clonglong, k::Clonglong, Child::Ptr{Clonglong}, Sibling::Ptr{Clonglong}, Order::Ptr{Clonglong}, Stack::Ptr{Clonglong})::Clonglong
 end
 
+function umfpack_di_symbolic(n_row, n_col, Ap, Ai, Ax, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_di_symbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_symbolic(n_row, n_col, Ap, Ai, Ax, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_dl_symbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_symbolic(n_row, n_col, Ap, Ai, Ax, Az, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_zi_symbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_symbolic(n_row, n_col, Ap, Ai, Ax, Az, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_zl_symbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_numeric(Ap, Ai, Ax, Symbolic, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_di_numeric(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_numeric(Ap, Ai, Ax, Symbolic, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_dl_numeric(Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_numeric(Ap, Ai, Ax, Az, Symbolic, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_zi_numeric(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_numeric(Ap, Ai, Ax, Az, Symbolic, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_zl_numeric(Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Symbolic::Ptr{Cvoid}, Numeric::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_solve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_di_solve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_solve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_dl_solve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_solve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_zi_solve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_solve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info)
+    @ccall libumfpack.umfpack_zl_solve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_free_symbolic(Symbolic)
+    @ccall libumfpack.umfpack_di_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_dl_free_symbolic(Symbolic)
+    @ccall libumfpack.umfpack_dl_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_zi_free_symbolic(Symbolic)
+    @ccall libumfpack.umfpack_zi_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_zl_free_symbolic(Symbolic)
+    @ccall libumfpack.umfpack_zl_free_symbolic(Symbolic::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_di_free_numeric(Numeric)
+    @ccall libumfpack.umfpack_di_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_dl_free_numeric(Numeric)
+    @ccall libumfpack.umfpack_dl_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_zi_free_numeric(Numeric)
+    @ccall libumfpack.umfpack_zi_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_zl_free_numeric(Numeric)
+    @ccall libumfpack.umfpack_zl_free_numeric(Numeric::Ptr{Ptr{Cvoid}})::Cvoid
+end
+
+function umfpack_di_defaults(Control)
+    @ccall libumfpack.umfpack_di_defaults(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_dl_defaults(Control)
+    @ccall libumfpack.umfpack_dl_defaults(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_zi_defaults(Control)
+    @ccall libumfpack.umfpack_zi_defaults(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_zl_defaults(Control)
+    @ccall libumfpack.umfpack_zl_defaults(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_di_qsymbolic(n_row, n_col, Ap, Ai, Ax, Qinit, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_di_qsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Qinit::Ptr{Cint}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_qsymbolic(n_row, n_col, Ap, Ai, Ax, Qinit, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_dl_qsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Qinit::Ptr{Clonglong}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_qsymbolic(n_row, n_col, Ap, Ai, Ax, Az, Qinit, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_zi_qsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Qinit::Ptr{Cint}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_qsymbolic(n_row, n_col, Ap, Ai, Ax, Az, Qinit, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_zl_qsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Qinit::Ptr{Clonglong}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_fsymbolic(n_row, n_col, Ap, Ai, Ax, user_ordering, user_params, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_di_fsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_fsymbolic(n_row, n_col, Ap, Ai, Ax, user_ordering, user_params, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_dl_fsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_fsymbolic(n_row, n_col, Ap, Ai, Ax, Az, user_ordering, user_params, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_zi_fsymbolic(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_fsymbolic(n_row, n_col, Ap, Ai, Ax, Az, user_ordering, user_params, Symbolic, Control, Info)
+    @ccall libumfpack.umfpack_zl_fsymbolic(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, user_ordering::Ptr{Cvoid}, user_params::Ptr{Cvoid}, Symbolic::Ptr{Ptr{Cvoid}}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_wsolve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info, Wi, W)
+    @ccall libumfpack.umfpack_di_wsolve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Cint}, W::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_wsolve(sys, Ap, Ai, Ax, X, B, Numeric, Control, Info, Wi, W)
+    @ccall libumfpack.umfpack_dl_wsolve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Clonglong}, W::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_wsolve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info, Wi, W)
+    @ccall libumfpack.umfpack_zi_wsolve(sys::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Cint}, W::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_wsolve(sys, Ap, Ai, Ax, Az, Xx, Xz, Bx, Bz, Numeric, Control, Info, Wi, W)
+    @ccall libumfpack.umfpack_zl_wsolve(sys::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble}, Wi::Ptr{Clonglong}, W::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Ap, Ai, Ax, Map)
+    @ccall libumfpack.umfpack_di_triplet_to_col(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Map::Ptr{Cint})::Cint
+end
+
+function umfpack_dl_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Ap, Ai, Ax, Map)
+    @ccall libumfpack.umfpack_dl_triplet_to_col(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Map::Ptr{Clonglong})::Clonglong
+end
+
+function umfpack_zi_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Tz, Ap, Ai, Ax, Az, Map)
+    @ccall libumfpack.umfpack_zi_triplet_to_col(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Map::Ptr{Cint})::Cint
+end
+
+function umfpack_zl_triplet_to_col(n_row, n_col, nz, Ti, Tj, Tx, Tz, Ap, Ai, Ax, Az, Map)
+    @ccall libumfpack.umfpack_zl_triplet_to_col(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, Map::Ptr{Clonglong})::Clonglong
+end
+
+function umfpack_di_col_to_triplet(n_col, Ap, Tj)
+    @ccall libumfpack.umfpack_di_col_to_triplet(n_col::Cint, Ap::Ptr{Cint}, Tj::Ptr{Cint})::Cint
+end
+
+function umfpack_dl_col_to_triplet(n_col, Ap, Tj)
+    @ccall libumfpack.umfpack_dl_col_to_triplet(n_col::Clonglong, Ap::Ptr{Clonglong}, Tj::Ptr{Clonglong})::Clonglong
+end
+
+function umfpack_zi_col_to_triplet(n_col, Ap, Tj)
+    @ccall libumfpack.umfpack_zi_col_to_triplet(n_col::Cint, Ap::Ptr{Cint}, Tj::Ptr{Cint})::Cint
+end
+
+function umfpack_zl_col_to_triplet(n_col, Ap, Tj)
+    @ccall libumfpack.umfpack_zl_col_to_triplet(n_col::Clonglong, Ap::Ptr{Clonglong}, Tj::Ptr{Clonglong})::Clonglong
+end
+
+function umfpack_di_transpose(n_row, n_col, Ap, Ai, Ax, P, Q, Rp, Ri, Rx)
+    @ccall libumfpack.umfpack_di_transpose(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rp::Ptr{Cint}, Ri::Ptr{Cint}, Rx::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_transpose(n_row, n_col, Ap, Ai, Ax, P, Q, Rp, Ri, Rx)
+    @ccall libumfpack.umfpack_dl_transpose(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Rp::Ptr{Clonglong}, Ri::Ptr{Clonglong}, Rx::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_transpose(n_row, n_col, Ap, Ai, Ax, Az, P, Q, Rp, Ri, Rx, Rz, do_conjugate)
+    @ccall libumfpack.umfpack_zi_transpose(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rp::Ptr{Cint}, Ri::Ptr{Cint}, Rx::Ptr{Cdouble}, Rz::Ptr{Cdouble}, do_conjugate::Cint)::Cint
+end
+
+function umfpack_zl_transpose(n_row, n_col, Ap, Ai, Ax, Az, P, Q, Rp, Ri, Rx, Rz, do_conjugate)
+    @ccall libumfpack.umfpack_zl_transpose(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Rp::Ptr{Clonglong}, Ri::Ptr{Clonglong}, Rx::Ptr{Cdouble}, Rz::Ptr{Cdouble}, do_conjugate::Clonglong)::Clonglong
+end
+
+function umfpack_di_scale(X, B, Numeric)
+    @ccall libumfpack.umfpack_di_scale(X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
+end
+
+function umfpack_dl_scale(X, B, Numeric)
+    @ccall libumfpack.umfpack_dl_scale(X::Ptr{Cdouble}, B::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_zi_scale(Xx, Xz, Bx, Bz, Numeric)
+    @ccall libumfpack.umfpack_zi_scale(Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
+end
+
+function umfpack_zl_scale(Xx, Xz, Bx, Bz, Numeric)
+    @ccall libumfpack.umfpack_zl_scale(Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Bx::Ptr{Cdouble}, Bz::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_di_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
+    @ccall libumfpack.umfpack_di_get_lunz(lnz::Ptr{Cint}, unz::Ptr{Cint}, n_row::Ptr{Cint}, n_col::Ptr{Cint}, nz_udiag::Ptr{Cint}, Numeric::Ptr{Cvoid})::Cint
+end
+
+function umfpack_dl_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
+    @ccall libumfpack.umfpack_dl_get_lunz(lnz::Ptr{Clonglong}, unz::Ptr{Clonglong}, n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, nz_udiag::Ptr{Clonglong}, Numeric::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_zi_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
+    @ccall libumfpack.umfpack_zi_get_lunz(lnz::Ptr{Cint}, unz::Ptr{Cint}, n_row::Ptr{Cint}, n_col::Ptr{Cint}, nz_udiag::Ptr{Cint}, Numeric::Ptr{Cvoid})::Cint
+end
+
+function umfpack_zl_get_lunz(lnz, unz, n_row, n_col, nz_udiag, Numeric)
+    @ccall libumfpack.umfpack_zl_get_lunz(lnz::Ptr{Clonglong}, unz::Ptr{Clonglong}, n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, nz_udiag::Ptr{Clonglong}, Numeric::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_di_get_numeric(Lp, Lj, Lx, Up, Ui, Ux, P, Q, Dx, do_recip, Rs, Numeric)
+    @ccall libumfpack.umfpack_di_get_numeric(Lp::Ptr{Cint}, Lj::Ptr{Cint}, Lx::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Dx::Ptr{Cdouble}, do_recip::Ptr{Cint}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
+end
+
+function umfpack_dl_get_numeric(Lp, Lj, Lx, Up, Ui, Ux, P, Q, Dx, do_recip, Rs, Numeric)
+    @ccall libumfpack.umfpack_dl_get_numeric(Lp::Ptr{Clonglong}, Lj::Ptr{Clonglong}, Lx::Ptr{Cdouble}, Up::Ptr{Clonglong}, Ui::Ptr{Clonglong}, Ux::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Dx::Ptr{Cdouble}, do_recip::Ptr{Clonglong}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_zi_get_numeric(Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q, Dx, Dz, do_recip, Rs, Numeric)
+    @ccall libumfpack.umfpack_zi_get_numeric(Lp::Ptr{Cint}, Lj::Ptr{Cint}, Lx::Ptr{Cdouble}, Lz::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, Uz::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Dx::Ptr{Cdouble}, Dz::Ptr{Cdouble}, do_recip::Ptr{Cint}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Cint
+end
+
+function umfpack_zl_get_numeric(Lp, Lj, Lx, Lz, Up, Ui, Ux, Uz, P, Q, Dx, Dz, do_recip, Rs, Numeric)
+    @ccall libumfpack.umfpack_zl_get_numeric(Lp::Ptr{Clonglong}, Lj::Ptr{Clonglong}, Lx::Ptr{Cdouble}, Lz::Ptr{Cdouble}, Up::Ptr{Clonglong}, Ui::Ptr{Clonglong}, Ux::Ptr{Cdouble}, Uz::Ptr{Cdouble}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Dx::Ptr{Cdouble}, Dz::Ptr{Cdouble}, do_recip::Ptr{Clonglong}, Rs::Ptr{Cdouble}, Numeric::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_di_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
+    @ccall libumfpack.umfpack_di_get_symbolic(n_row::Ptr{Cint}, n_col::Ptr{Cint}, n1::Ptr{Cint}, nz::Ptr{Cint}, nfr::Ptr{Cint}, nchains::Ptr{Cint}, P::Ptr{Cint}, Q::Ptr{Cint}, Front_npivcol::Ptr{Cint}, Front_parent::Ptr{Cint}, Front_1strow::Ptr{Cint}, Front_leftmostdesc::Ptr{Cint}, Chain_start::Ptr{Cint}, Chain_maxrows::Ptr{Cint}, Chain_maxcols::Ptr{Cint}, Symbolic::Ptr{Cvoid})::Cint
+end
+
+function umfpack_dl_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
+    @ccall libumfpack.umfpack_dl_get_symbolic(n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, n1::Ptr{Clonglong}, nz::Ptr{Clonglong}, nfr::Ptr{Clonglong}, nchains::Ptr{Clonglong}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Front_npivcol::Ptr{Clonglong}, Front_parent::Ptr{Clonglong}, Front_1strow::Ptr{Clonglong}, Front_leftmostdesc::Ptr{Clonglong}, Chain_start::Ptr{Clonglong}, Chain_maxrows::Ptr{Clonglong}, Chain_maxcols::Ptr{Clonglong}, Symbolic::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_zi_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
+    @ccall libumfpack.umfpack_zi_get_symbolic(n_row::Ptr{Cint}, n_col::Ptr{Cint}, n1::Ptr{Cint}, nz::Ptr{Cint}, nfr::Ptr{Cint}, nchains::Ptr{Cint}, P::Ptr{Cint}, Q::Ptr{Cint}, Front_npivcol::Ptr{Cint}, Front_parent::Ptr{Cint}, Front_1strow::Ptr{Cint}, Front_leftmostdesc::Ptr{Cint}, Chain_start::Ptr{Cint}, Chain_maxrows::Ptr{Cint}, Chain_maxcols::Ptr{Cint}, Symbolic::Ptr{Cvoid})::Cint
+end
+
+function umfpack_zl_get_symbolic(n_row, n_col, n1, nz, nfr, nchains, P, Q, Front_npivcol, Front_parent, Front_1strow, Front_leftmostdesc, Chain_start, Chain_maxrows, Chain_maxcols, Symbolic)
+    @ccall libumfpack.umfpack_zl_get_symbolic(n_row::Ptr{Clonglong}, n_col::Ptr{Clonglong}, n1::Ptr{Clonglong}, nz::Ptr{Clonglong}, nfr::Ptr{Clonglong}, nchains::Ptr{Clonglong}, P::Ptr{Clonglong}, Q::Ptr{Clonglong}, Front_npivcol::Ptr{Clonglong}, Front_parent::Ptr{Clonglong}, Front_1strow::Ptr{Clonglong}, Front_leftmostdesc::Ptr{Clonglong}, Chain_start::Ptr{Clonglong}, Chain_maxrows::Ptr{Clonglong}, Chain_maxcols::Ptr{Clonglong}, Symbolic::Ptr{Cvoid})::Clonglong
+end
+
+function umfpack_di_save_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_di_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_dl_save_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_dl_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_zi_save_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_zi_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_zl_save_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_zl_save_numeric(Numeric::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_di_load_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_di_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_dl_load_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_dl_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_zi_load_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_zi_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_zl_load_numeric(Numeric, filename)
+    @ccall libumfpack.umfpack_zl_load_numeric(Numeric::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_di_save_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_di_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_dl_save_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_dl_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_zi_save_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_zi_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_zl_save_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_zl_save_symbolic(Symbolic::Ptr{Cvoid}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_di_load_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_di_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_dl_load_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_dl_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_zi_load_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_zi_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Cint
+end
+
+function umfpack_zl_load_symbolic(Symbolic, filename)
+    @ccall libumfpack.umfpack_zl_load_symbolic(Symbolic::Ptr{Ptr{Cvoid}}, filename::Ptr{Cchar})::Clonglong
+end
+
+function umfpack_di_get_determinant(Mx, Ex, NumericHandle, User_Info)
+    @ccall libumfpack.umfpack_di_get_determinant(Mx::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_get_determinant(Mx, Ex, NumericHandle, User_Info)
+    @ccall libumfpack.umfpack_dl_get_determinant(Mx::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_get_determinant(Mx, Mz, Ex, NumericHandle, User_Info)
+    @ccall libumfpack.umfpack_zi_get_determinant(Mx::Ptr{Cdouble}, Mz::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_get_determinant(Mx, Mz, Ex, NumericHandle, User_Info)
+    @ccall libumfpack.umfpack_zl_get_determinant(Mx::Ptr{Cdouble}, Mz::Ptr{Cdouble}, Ex::Ptr{Cdouble}, NumericHandle::Ptr{Cvoid}, User_Info::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_report_status(Control, status)
+    @ccall libumfpack.umfpack_di_report_status(Control::Ptr{Cdouble}, status::Cint)::Cvoid
+end
+
+function umfpack_dl_report_status(Control, status)
+    @ccall libumfpack.umfpack_dl_report_status(Control::Ptr{Cdouble}, status::Clonglong)::Cvoid
+end
+
+function umfpack_zi_report_status(Control, status)
+    @ccall libumfpack.umfpack_zi_report_status(Control::Ptr{Cdouble}, status::Cint)::Cvoid
+end
+
+function umfpack_zl_report_status(Control, status)
+    @ccall libumfpack.umfpack_zl_report_status(Control::Ptr{Cdouble}, status::Clonglong)::Cvoid
+end
+
+function umfpack_di_report_info(Control, Info)
+    @ccall libumfpack.umfpack_di_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_dl_report_info(Control, Info)
+    @ccall libumfpack.umfpack_dl_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_zi_report_info(Control, Info)
+    @ccall libumfpack.umfpack_zi_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_zl_report_info(Control, Info)
+    @ccall libumfpack.umfpack_zl_report_info(Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_di_report_control(Control)
+    @ccall libumfpack.umfpack_di_report_control(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_dl_report_control(Control)
+    @ccall libumfpack.umfpack_dl_report_control(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_zi_report_control(Control)
+    @ccall libumfpack.umfpack_zi_report_control(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_zl_report_control(Control)
+    @ccall libumfpack.umfpack_zl_report_control(Control::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_di_report_matrix(n_row, n_col, Ap, Ai, Ax, col_form, Control)
+    @ccall libumfpack.umfpack_di_report_matrix(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, col_form::Cint, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_report_matrix(n_row, n_col, Ap, Ai, Ax, col_form, Control)
+    @ccall libumfpack.umfpack_dl_report_matrix(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, col_form::Clonglong, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_report_matrix(n_row, n_col, Ap, Ai, Ax, Az, col_form, Control)
+    @ccall libumfpack.umfpack_zi_report_matrix(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, col_form::Cint, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_report_matrix(n_row, n_col, Ap, Ai, Ax, Az, col_form, Control)
+    @ccall libumfpack.umfpack_zl_report_matrix(n_row::Clonglong, n_col::Clonglong, Ap::Ptr{Clonglong}, Ai::Ptr{Clonglong}, Ax::Ptr{Cdouble}, Az::Ptr{Cdouble}, col_form::Clonglong, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Control)
+    @ccall libumfpack.umfpack_di_report_triplet(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Control)
+    @ccall libumfpack.umfpack_dl_report_triplet(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Tz, Control)
+    @ccall libumfpack.umfpack_zi_report_triplet(n_row::Cint, n_col::Cint, nz::Cint, Ti::Ptr{Cint}, Tj::Ptr{Cint}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_report_triplet(n_row, n_col, nz, Ti, Tj, Tx, Tz, Control)
+    @ccall libumfpack.umfpack_zl_report_triplet(n_row::Clonglong, n_col::Clonglong, nz::Clonglong, Ti::Ptr{Clonglong}, Tj::Ptr{Clonglong}, Tx::Ptr{Cdouble}, Tz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_report_vector(n, X, Control)
+    @ccall libumfpack.umfpack_di_report_vector(n::Cint, X::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_report_vector(n, X, Control)
+    @ccall libumfpack.umfpack_dl_report_vector(n::Clonglong, X::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_report_vector(n, Xx, Xz, Control)
+    @ccall libumfpack.umfpack_zi_report_vector(n::Cint, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_report_vector(n, Xx, Xz, Control)
+    @ccall libumfpack.umfpack_zl_report_vector(n::Clonglong, Xx::Ptr{Cdouble}, Xz::Ptr{Cdouble}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_report_symbolic(Symbolic, Control)
+    @ccall libumfpack.umfpack_di_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_report_symbolic(Symbolic, Control)
+    @ccall libumfpack.umfpack_dl_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_report_symbolic(Symbolic, Control)
+    @ccall libumfpack.umfpack_zi_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_report_symbolic(Symbolic, Control)
+    @ccall libumfpack.umfpack_zl_report_symbolic(Symbolic::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_report_numeric(Numeric, Control)
+    @ccall libumfpack.umfpack_di_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_report_numeric(Numeric, Control)
+    @ccall libumfpack.umfpack_dl_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_report_numeric(Numeric, Control)
+    @ccall libumfpack.umfpack_zi_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_report_numeric(Numeric, Control)
+    @ccall libumfpack.umfpack_zl_report_numeric(Numeric::Ptr{Cvoid}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_di_report_perm(np, Perm, Control)
+    @ccall libumfpack.umfpack_di_report_perm(np::Cint, Perm::Ptr{Cint}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_dl_report_perm(np, Perm, Control)
+    @ccall libumfpack.umfpack_dl_report_perm(np::Clonglong, Perm::Ptr{Clonglong}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_zi_report_perm(np, Perm, Control)
+    @ccall libumfpack.umfpack_zi_report_perm(np::Cint, Perm::Ptr{Cint}, Control::Ptr{Cdouble})::Cint
+end
+
+function umfpack_zl_report_perm(np, Perm, Control)
+    @ccall libumfpack.umfpack_zl_report_perm(np::Clonglong, Perm::Ptr{Clonglong}, Control::Ptr{Cdouble})::Clonglong
+end
+
+function umfpack_timer()
+    @ccall libumfpack.umfpack_timer()::Cdouble
+end
+
+function umfpack_tic(stats)
+    @ccall libumfpack.umfpack_tic(stats::Ptr{Cdouble})::Cvoid
+end
+
+function umfpack_toc(stats)
+    @ccall libumfpack.umfpack_toc(stats::Ptr{Cdouble})::Cvoid
+end
+
 const _FILE_OFFSET_BITS = 64
 
 const SuiteSparse_long = __int64
@@ -2891,6 +2891,226 @@ const SPQR_SUBSUB_VERSION = 9
 const SPQR_VERSION = SPQR_VER_CODE(SPQR_MAIN_VERSION, SPQR_SUB_VERSION)
 
 const Complex = Float64
+
+const BTF_DATE = "May 4, 2016"
+
+BTF_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const BTF_MAIN_VERSION = 1
+
+const BTF_SUB_VERSION = 2
+
+const BTF_SUBSUB_VERSION = 6
+
+const BTF_VERSION = BTF_VERSION_CODE(BTF_MAIN_VERSION, BTF_SUB_VERSION)
+
+const KLU_OK = 0
+
+const KLU_SINGULAR = 1
+
+const KLU_OUT_OF_MEMORY = -2
+
+const KLU_INVALID = -3
+
+const KLU_TOO_LARGE = -4
+
+const KLU_DATE = "Mar 12, 2018"
+
+KLU_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const KLU_MAIN_VERSION = 1
+
+const KLU_SUB_VERSION = 3
+
+const KLU_SUBSUB_VERSION = 9
+
+const KLU_VERSION = KLU_VERSION_CODE(KLU_MAIN_VERSION, KLU_SUB_VERSION)
+
+const AMD_CONTROL = 5
+
+const AMD_INFO = 20
+
+const AMD_DENSE = 0
+
+const AMD_AGGRESSIVE = 1
+
+const AMD_DEFAULT_DENSE = 10.0
+
+const AMD_DEFAULT_AGGRESSIVE = 1
+
+const AMD_STATUS = 0
+
+const AMD_N = 1
+
+const AMD_NZ = 2
+
+const AMD_SYMMETRY = 3
+
+const AMD_NZDIAG = 4
+
+const AMD_NZ_A_PLUS_AT = 5
+
+const AMD_NDENSE = 6
+
+const AMD_MEMORY = 7
+
+const AMD_NCMPA = 8
+
+const AMD_LNZ = 9
+
+const AMD_NDIV = 10
+
+const AMD_NMULTSUBS_LDL = 11
+
+const AMD_NMULTSUBS_LU = 12
+
+const AMD_DMAX = 13
+
+const AMD_OK = 0
+
+const AMD_OUT_OF_MEMORY = -1
+
+const AMD_INVALID = -2
+
+const AMD_OK_BUT_JUMBLED = 1
+
+const AMD_DATE = "May 4, 2016"
+
+AMD_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const AMD_MAIN_VERSION = 2
+
+const AMD_SUB_VERSION = 4
+
+const AMD_SUBSUB_VERSION = 6
+
+const AMD_VERSION = AMD_VERSION_CODE(AMD_MAIN_VERSION, AMD_SUB_VERSION)
+
+const COLAMD_DATE = "May 4, 2016"
+
+COLAMD_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const COLAMD_MAIN_VERSION = 2
+
+const COLAMD_SUB_VERSION = 9
+
+const COLAMD_SUBSUB_VERSION = 6
+
+const COLAMD_VERSION = COLAMD_VERSION_CODE(COLAMD_MAIN_VERSION, COLAMD_SUB_VERSION)
+
+const COLAMD_KNOBS = 20
+
+const COLAMD_STATS = 20
+
+const COLAMD_DENSE_ROW = 0
+
+const COLAMD_DENSE_COL = 1
+
+const COLAMD_AGGRESSIVE = 2
+
+const COLAMD_DEFRAG_COUNT = 2
+
+const COLAMD_STATUS = 3
+
+const COLAMD_INFO1 = 4
+
+const COLAMD_INFO2 = 5
+
+const COLAMD_INFO3 = 6
+
+const COLAMD_OK = 0
+
+const COLAMD_OK_BUT_JUMBLED = 1
+
+const COLAMD_ERROR_A_not_present = -1
+
+const COLAMD_ERROR_p_not_present = -2
+
+const COLAMD_ERROR_nrow_negative = -3
+
+const COLAMD_ERROR_ncol_negative = -4
+
+const COLAMD_ERROR_nnz_negative = -5
+
+const COLAMD_ERROR_p0_nonzero = -6
+
+const COLAMD_ERROR_A_too_small = -7
+
+const COLAMD_ERROR_col_length_negative = -8
+
+const COLAMD_ERROR_row_index_out_of_bounds = -9
+
+const COLAMD_ERROR_out_of_memory = -10
+
+const COLAMD_ERROR_internal_error = -999
+
+const CCOLAMD_DATE = "May 4, 2016"
+
+const CCOLAMD_MAIN_VERSION = 2
+
+const CCOLAMD_SUB_VERSION = 9
+
+const CCOLAMD_SUBSUB_VERSION = 6
+
+const CCOLAMD_VERSION = CCOLAMD_VERSION_CODE(CCOLAMD_MAIN_VERSION, CCOLAMD_SUB_VERSION)
+
+const CCOLAMD_KNOBS = 20
+
+const CCOLAMD_STATS = 20
+
+const CCOLAMD_DENSE_ROW = 0
+
+const CCOLAMD_DENSE_COL = 1
+
+const CCOLAMD_AGGRESSIVE = 2
+
+const CCOLAMD_LU = 3
+
+const CCOLAMD_DEFRAG_COUNT = 2
+
+const CCOLAMD_STATUS = 3
+
+const CCOLAMD_INFO1 = 4
+
+const CCOLAMD_INFO2 = 5
+
+const CCOLAMD_INFO3 = 6
+
+const CCOLAMD_EMPTY_ROW = 7
+
+const CCOLAMD_EMPTY_COL = 8
+
+const CCOLAMD_NEWLY_EMPTY_ROW = 9
+
+const CCOLAMD_NEWLY_EMPTY_COL = 10
+
+const CCOLAMD_OK = 0
+
+const CCOLAMD_OK_BUT_JUMBLED = 1
+
+const CCOLAMD_ERROR_A_not_present = -1
+
+const CCOLAMD_ERROR_p_not_present = -2
+
+const CCOLAMD_ERROR_nrow_negative = -3
+
+const CCOLAMD_ERROR_ncol_negative = -4
+
+const CCOLAMD_ERROR_nnz_negative = -5
+
+const CCOLAMD_ERROR_p0_nonzero = -6
+
+const CCOLAMD_ERROR_A_too_small = -7
+
+const CCOLAMD_ERROR_col_length_negative = -8
+
+const CCOLAMD_ERROR_row_index_out_of_bounds = -9
+
+const CCOLAMD_ERROR_out_of_memory = -10
+
+const CCOLAMD_ERROR_invalid_cmember = -11
+
+const CCOLAMD_ERROR_internal_error = -999
 
 const UMFPACK_INFO = 90
 
@@ -3248,224 +3468,4 @@ const UMFPACK_Q_Uat = 12
 const UMFPACK_Ut = 13
 
 const UMFPACK_Uat = 14
-
-const BTF_DATE = "May 4, 2016"
-
-BTF_VERSION_CODE(main, sub) = main * 1000 + sub
-
-const BTF_MAIN_VERSION = 1
-
-const BTF_SUB_VERSION = 2
-
-const BTF_SUBSUB_VERSION = 6
-
-const BTF_VERSION = BTF_VERSION_CODE(BTF_MAIN_VERSION, BTF_SUB_VERSION)
-
-const KLU_OK = 0
-
-const KLU_SINGULAR = 1
-
-const KLU_OUT_OF_MEMORY = -2
-
-const KLU_INVALID = -3
-
-const KLU_TOO_LARGE = -4
-
-const KLU_DATE = "Mar 12, 2018"
-
-KLU_VERSION_CODE(main, sub) = main * 1000 + sub
-
-const KLU_MAIN_VERSION = 1
-
-const KLU_SUB_VERSION = 3
-
-const KLU_SUBSUB_VERSION = 9
-
-const KLU_VERSION = KLU_VERSION_CODE(KLU_MAIN_VERSION, KLU_SUB_VERSION)
-
-const AMD_CONTROL = 5
-
-const AMD_INFO = 20
-
-const AMD_DENSE = 0
-
-const AMD_AGGRESSIVE = 1
-
-const AMD_DEFAULT_DENSE = 10.0
-
-const AMD_DEFAULT_AGGRESSIVE = 1
-
-const AMD_STATUS = 0
-
-const AMD_N = 1
-
-const AMD_NZ = 2
-
-const AMD_SYMMETRY = 3
-
-const AMD_NZDIAG = 4
-
-const AMD_NZ_A_PLUS_AT = 5
-
-const AMD_NDENSE = 6
-
-const AMD_MEMORY = 7
-
-const AMD_NCMPA = 8
-
-const AMD_LNZ = 9
-
-const AMD_NDIV = 10
-
-const AMD_NMULTSUBS_LDL = 11
-
-const AMD_NMULTSUBS_LU = 12
-
-const AMD_DMAX = 13
-
-const AMD_OK = 0
-
-const AMD_OUT_OF_MEMORY = -1
-
-const AMD_INVALID = -2
-
-const AMD_OK_BUT_JUMBLED = 1
-
-const AMD_DATE = "May 4, 2016"
-
-AMD_VERSION_CODE(main, sub) = main * 1000 + sub
-
-const AMD_MAIN_VERSION = 2
-
-const AMD_SUB_VERSION = 4
-
-const AMD_SUBSUB_VERSION = 6
-
-const AMD_VERSION = AMD_VERSION_CODE(AMD_MAIN_VERSION, AMD_SUB_VERSION)
-
-const COLAMD_DATE = "May 4, 2016"
-
-COLAMD_VERSION_CODE(main, sub) = main * 1000 + sub
-
-const COLAMD_MAIN_VERSION = 2
-
-const COLAMD_SUB_VERSION = 9
-
-const COLAMD_SUBSUB_VERSION = 6
-
-const COLAMD_VERSION = COLAMD_VERSION_CODE(COLAMD_MAIN_VERSION, COLAMD_SUB_VERSION)
-
-const COLAMD_KNOBS = 20
-
-const COLAMD_STATS = 20
-
-const COLAMD_DENSE_ROW = 0
-
-const COLAMD_DENSE_COL = 1
-
-const COLAMD_AGGRESSIVE = 2
-
-const COLAMD_DEFRAG_COUNT = 2
-
-const COLAMD_STATUS = 3
-
-const COLAMD_INFO1 = 4
-
-const COLAMD_INFO2 = 5
-
-const COLAMD_INFO3 = 6
-
-const COLAMD_OK = 0
-
-const COLAMD_OK_BUT_JUMBLED = 1
-
-const COLAMD_ERROR_A_not_present = -1
-
-const COLAMD_ERROR_p_not_present = -2
-
-const COLAMD_ERROR_nrow_negative = -3
-
-const COLAMD_ERROR_ncol_negative = -4
-
-const COLAMD_ERROR_nnz_negative = -5
-
-const COLAMD_ERROR_p0_nonzero = -6
-
-const COLAMD_ERROR_A_too_small = -7
-
-const COLAMD_ERROR_col_length_negative = -8
-
-const COLAMD_ERROR_row_index_out_of_bounds = -9
-
-const COLAMD_ERROR_out_of_memory = -10
-
-const COLAMD_ERROR_internal_error = -999
-
-const CCOLAMD_DATE = "May 4, 2016"
-
-const CCOLAMD_MAIN_VERSION = 2
-
-const CCOLAMD_SUB_VERSION = 9
-
-const CCOLAMD_SUBSUB_VERSION = 6
-
-const CCOLAMD_VERSION = CCOLAMD_VERSION_CODE(CCOLAMD_MAIN_VERSION, CCOLAMD_SUB_VERSION)
-
-const CCOLAMD_KNOBS = 20
-
-const CCOLAMD_STATS = 20
-
-const CCOLAMD_DENSE_ROW = 0
-
-const CCOLAMD_DENSE_COL = 1
-
-const CCOLAMD_AGGRESSIVE = 2
-
-const CCOLAMD_LU = 3
-
-const CCOLAMD_DEFRAG_COUNT = 2
-
-const CCOLAMD_STATUS = 3
-
-const CCOLAMD_INFO1 = 4
-
-const CCOLAMD_INFO2 = 5
-
-const CCOLAMD_INFO3 = 6
-
-const CCOLAMD_EMPTY_ROW = 7
-
-const CCOLAMD_EMPTY_COL = 8
-
-const CCOLAMD_NEWLY_EMPTY_ROW = 9
-
-const CCOLAMD_NEWLY_EMPTY_COL = 10
-
-const CCOLAMD_OK = 0
-
-const CCOLAMD_OK_BUT_JUMBLED = 1
-
-const CCOLAMD_ERROR_A_not_present = -1
-
-const CCOLAMD_ERROR_p_not_present = -2
-
-const CCOLAMD_ERROR_nrow_negative = -3
-
-const CCOLAMD_ERROR_ncol_negative = -4
-
-const CCOLAMD_ERROR_nnz_negative = -5
-
-const CCOLAMD_ERROR_p0_nonzero = -6
-
-const CCOLAMD_ERROR_A_too_small = -7
-
-const CCOLAMD_ERROR_col_length_negative = -8
-
-const CCOLAMD_ERROR_row_index_out_of_bounds = -9
-
-const CCOLAMD_ERROR_out_of_memory = -10
-
-const CCOLAMD_ERROR_invalid_cmember = -11
-
-const CCOLAMD_ERROR_internal_error = -999
 
