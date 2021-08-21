@@ -16,7 +16,7 @@ version = "0.4.1"
 
 [[Clang]]
 deps = ["CEnum", "Clang_jll", "Downloads", "Pkg", "TOML"]
-git-tree-sha1 = "59687b776ff47eebbab8422186b7eb670caf447f"
+git-tree-sha1 = "5502a46b4b6fbdf34061450bd2f69197bfad16cb"
 repo-rev = "julia-1.7"
 repo-url = "https://github.com/JuliaInterop/Clang.jl"
 uuid = "40e3b903-d033-50b4-a0cc-940c62c95e31"
@@ -24,9 +24,9 @@ version = "0.14.0"
 
 [[Clang_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libLLVM_jll"]
-git-tree-sha1 = "39e54fee89caf38de9196d8919475aa2ff65309d"
+git-tree-sha1 = "0312b2bec066a688bd79706c49deb48fefca836c"
 uuid = "0ee61d77-7f21-5576-8119-9fcc46b10100"
-version = "12.0.0+1"
+version = "12.0.1+0"
 
 [[Dates]]
 deps = ["Printf"]

@@ -973,27 +973,27 @@ function cholmod_l_write_dense(arg1, arg2, arg3, arg4)
 end
 
 function cholmod_ccolamd(A, fset, fsize, Cmember, Perm, Common)
-    @ccall libcholmod.cholmod_ccolamd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
+    @ccall libamd.cholmod_ccolamd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_l_ccolamd(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.cholmod_l_ccolamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clong}, arg3::Csize_t, arg4::Ptr{Clong}, arg5::Ptr{Clong}, arg6::Ptr{cholmod_common})::Cint
+    @ccall libamd.cholmod_l_ccolamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clong}, arg3::Csize_t, arg4::Ptr{Clong}, arg5::Ptr{Clong}, arg6::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_csymamd(A, Cmember, Perm, Common)
-    @ccall libcholmod.cholmod_csymamd(A::Ptr{cholmod_sparse}, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
+    @ccall libamd.cholmod_csymamd(A::Ptr{cholmod_sparse}, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_l_csymamd(arg1, arg2, arg3, arg4)
-    @ccall libcholmod.cholmod_l_csymamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clong}, arg3::Ptr{Clong}, arg4::Ptr{cholmod_common})::Cint
+    @ccall libamd.cholmod_l_csymamd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clong}, arg3::Ptr{Clong}, arg4::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_camd(A, fset, fsize, Cmember, Perm, Common)
-    @ccall libcholmod.cholmod_camd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
+    @ccall libamd.cholmod_camd(A::Ptr{cholmod_sparse}, fset::Ptr{Cint}, fsize::Csize_t, Cmember::Ptr{Cint}, Perm::Ptr{Cint}, Common::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_l_camd(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.cholmod_l_camd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clong}, arg3::Csize_t, arg4::Ptr{Clong}, arg5::Ptr{Clong}, arg6::Ptr{cholmod_common})::Cint
+    @ccall libamd.cholmod_l_camd(arg1::Ptr{cholmod_sparse}, arg2::Ptr{Clong}, arg3::Csize_t, arg4::Ptr{Clong}, arg5::Ptr{Clong}, arg6::Ptr{cholmod_common})::Cint
 end
 
 function cholmod_nested_dissection(A, fset, fsize, Perm, CParent, Cmember, Common)
@@ -2036,102 +2036,6 @@ function umfpack_toc(stats)
     @ccall libumfpack.umfpack_toc(stats::Ptr{Cdouble})::Cvoid
 end
 
-function amd_order(n, Ap, Ai, P, Control, Info)
-    @ccall libcholmod.amd_order(n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, P::Ptr{Cint}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
-end
-
-function amd_l_order(n, Ap, Ai, P, Control, Info)
-    @ccall libcholmod.amd_l_order(n::Clong, Ap::Ptr{Clong}, Ai::Ptr{Clong}, P::Ptr{Clong}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clong
-end
-
-function amd_2(n, Pe, Iw, Len, iwlen, pfree, Nv, Next, Last, Head, Elen, Degree, W, Control, Info)
-    @ccall libcholmod.amd_2(n::Cint, Pe::Ptr{Cint}, Iw::Ptr{Cint}, Len::Ptr{Cint}, iwlen::Cint, pfree::Cint, Nv::Ptr{Cint}, Next::Ptr{Cint}, Last::Ptr{Cint}, Head::Ptr{Cint}, Elen::Ptr{Cint}, Degree::Ptr{Cint}, W::Ptr{Cint}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
-end
-
-function amd_l2(n, Pe, Iw, Len, iwlen, pfree, Nv, Next, Last, Head, Elen, Degree, W, Control, Info)
-    @ccall libcholmod.amd_l2(n::Clong, Pe::Ptr{Clong}, Iw::Ptr{Clong}, Len::Ptr{Clong}, iwlen::Clong, pfree::Clong, Nv::Ptr{Clong}, Next::Ptr{Clong}, Last::Ptr{Clong}, Head::Ptr{Clong}, Elen::Ptr{Clong}, Degree::Ptr{Clong}, W::Ptr{Clong}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
-end
-
-function amd_valid(n_row, n_col, Ap, Ai)
-    @ccall libcholmod.amd_valid(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint})::Cint
-end
-
-function amd_l_valid(n_row, n_col, Ap, Ai)
-    @ccall libcholmod.amd_l_valid(n_row::Clong, n_col::Clong, Ap::Ptr{Clong}, Ai::Ptr{Clong})::Clong
-end
-
-function amd_defaults(Control)
-    @ccall libcholmod.amd_defaults(Control::Ptr{Cdouble})::Cvoid
-end
-
-function amd_l_defaults(Control)
-    @ccall libcholmod.amd_l_defaults(Control::Ptr{Cdouble})::Cvoid
-end
-
-function amd_control(Control)
-    @ccall libcholmod.amd_control(Control::Ptr{Cdouble})::Cvoid
-end
-
-function amd_l_control(Control)
-    @ccall libcholmod.amd_l_control(Control::Ptr{Cdouble})::Cvoid
-end
-
-function amd_info(Info)
-    @ccall libcholmod.amd_info(Info::Ptr{Cdouble})::Cvoid
-end
-
-function amd_l_info(Info)
-    @ccall libcholmod.amd_l_info(Info::Ptr{Cdouble})::Cvoid
-end
-
-function colamd_recommended(nnz, n_row, n_col)
-    @ccall libcholmod.colamd_recommended(nnz::Cint, n_row::Cint, n_col::Cint)::Csize_t
-end
-
-function colamd_l_recommended(nnz, n_row, n_col)
-    @ccall libcholmod.colamd_l_recommended(nnz::Clong, n_row::Clong, n_col::Clong)::Csize_t
-end
-
-function colamd_set_defaults(knobs)
-    @ccall libcholmod.colamd_set_defaults(knobs::Ptr{Cdouble})::Cvoid
-end
-
-function colamd_l_set_defaults(knobs)
-    @ccall libcholmod.colamd_l_set_defaults(knobs::Ptr{Cdouble})::Cvoid
-end
-
-function colamd(n_row, n_col, Alen, A, p, knobs, stats)
-    @ccall libcholmod.colamd(n_row::Cint, n_col::Cint, Alen::Cint, A::Ptr{Cint}, p::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint})::Cint
-end
-
-function colamd_l(n_row, n_col, Alen, A, p, knobs, stats)
-    @ccall libcholmod.colamd_l(n_row::Clong, n_col::Clong, Alen::Clong, A::Ptr{Clong}, p::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong})::Clong
-end
-
-function symamd(n, A, p, perm, knobs, stats, allocate, release)
-    @ccall libcholmod.symamd(n::Cint, A::Ptr{Cint}, p::Ptr{Cint}, perm::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint}, allocate::Ptr{Cvoid}, release::Ptr{Cvoid})::Cint
-end
-
-function symamd_l(n, A, p, perm, knobs, stats, allocate, release)
-    @ccall libcholmod.symamd_l(n::Clong, A::Ptr{Clong}, p::Ptr{Clong}, perm::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong}, allocate::Ptr{Cvoid}, release::Ptr{Cvoid})::Clong
-end
-
-function colamd_report(stats)
-    @ccall libcholmod.colamd_report(stats::Ptr{Cint})::Cvoid
-end
-
-function colamd_l_report(stats)
-    @ccall libcholmod.colamd_l_report(stats::Ptr{Clong})::Cvoid
-end
-
-function symamd_report(stats)
-    @ccall libcholmod.symamd_report(stats::Ptr{Cint})::Cvoid
-end
-
-function symamd_l_report(stats)
-    @ccall libcholmod.symamd_l_report(stats::Ptr{Clong})::Cvoid
-end
-
 function btf_maxtrans(nrow, ncol, Ap, Ai, maxwork, work, Match, Work)
     @ccall libcholmod.btf_maxtrans(nrow::Cint, ncol::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, maxwork::Cdouble, work::Ptr{Cdouble}, Match::Ptr{Cint}, Work::Ptr{Cint})::Cint
 end
@@ -2313,251 +2217,435 @@ end
 const klu_l_common = klu_l_common_struct
 
 function klu_defaults(Common)
-    @ccall libcholmod.klu_defaults(Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_defaults(Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_defaults(Common)
-    @ccall libcholmod.klu_l_defaults(Common::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_defaults(Common::Ptr{klu_l_common})::Clong
 end
 
 function klu_analyze(n, Ap, Ai, Common)
-    @ccall libcholmod.klu_analyze(n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Common::Ptr{klu_common})::Ptr{klu_symbolic}
+    @ccall libklu.klu_analyze(n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Common::Ptr{klu_common})::Ptr{klu_symbolic}
 end
 
 function klu_l_analyze(arg1, arg2, arg3, Common)
-    @ccall libcholmod.klu_l_analyze(arg1::Clong, arg2::Ptr{Clong}, arg3::Ptr{Clong}, Common::Ptr{klu_l_common})::Ptr{klu_l_symbolic}
+    @ccall libklu.klu_l_analyze(arg1::Clong, arg2::Ptr{Clong}, arg3::Ptr{Clong}, Common::Ptr{klu_l_common})::Ptr{klu_l_symbolic}
 end
 
 function klu_analyze_given(n, Ap, Ai, P, Q, Common)
-    @ccall libcholmod.klu_analyze_given(n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, P::Ptr{Cint}, Q::Ptr{Cint}, Common::Ptr{klu_common})::Ptr{klu_symbolic}
+    @ccall libklu.klu_analyze_given(n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, P::Ptr{Cint}, Q::Ptr{Cint}, Common::Ptr{klu_common})::Ptr{klu_symbolic}
 end
 
 function klu_l_analyze_given(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_l_analyze_given(arg1::Clong, arg2::Ptr{Clong}, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Clong}, arg6::Ptr{klu_l_common})::Ptr{klu_l_symbolic}
+    @ccall libklu.klu_l_analyze_given(arg1::Clong, arg2::Ptr{Clong}, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Clong}, arg6::Ptr{klu_l_common})::Ptr{klu_l_symbolic}
 end
 
 function klu_factor(Ap, Ai, Ax, Symbolic, Common)
-    @ccall libcholmod.klu_factor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Common::Ptr{klu_common})::Ptr{klu_numeric}
+    @ccall libklu.klu_factor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Common::Ptr{klu_common})::Ptr{klu_numeric}
 end
 
 function klu_z_factor(Ap, Ai, Ax, Symbolic, Common)
-    @ccall libcholmod.klu_z_factor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Common::Ptr{klu_common})::Ptr{klu_numeric}
+    @ccall libklu.klu_z_factor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Common::Ptr{klu_common})::Ptr{klu_numeric}
 end
 
 function klu_l_factor(arg1, arg2, arg3, arg4, arg5)
-    @ccall libcholmod.klu_l_factor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_common})::Ptr{klu_l_numeric}
+    @ccall libklu.klu_l_factor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_common})::Ptr{klu_l_numeric}
 end
 
 function klu_zl_factor(arg1, arg2, arg3, arg4, arg5)
-    @ccall libcholmod.klu_zl_factor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_common})::Ptr{klu_l_numeric}
+    @ccall libklu.klu_zl_factor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_common})::Ptr{klu_l_numeric}
 end
 
 function klu_solve(Symbolic, Numeric, ldim, nrhs, B, Common)
-    @ccall libcholmod.klu_solve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_solve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_solve(Symbolic, Numeric, ldim, nrhs, B, Common)
-    @ccall libcholmod.klu_z_solve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_solve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_solve(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_l_solve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_solve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_solve(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_zl_solve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_solve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_tsolve(Symbolic, Numeric, ldim, nrhs, B, Common)
-    @ccall libcholmod.klu_tsolve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_tsolve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_tsolve(Symbolic, Numeric, ldim, nrhs, B, conj_solve, Common)
-    @ccall libcholmod.klu_z_tsolve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, conj_solve::Cint, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_tsolve(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, ldim::Cint, nrhs::Cint, B::Ptr{Cdouble}, conj_solve::Cint, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_tsolve(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_l_tsolve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_tsolve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_tsolve(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-    @ccall libcholmod.klu_zl_tsolve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Clong, arg7::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_tsolve(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Clong, arg4::Clong, arg5::Ptr{Cdouble}, arg6::Clong, arg7::Ptr{klu_l_common})::Clong
 end
 
 function klu_refactor(Ap, Ai, Ax, Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_refactor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_refactor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_refactor(Ap, Ai, Ax, Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_z_refactor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_refactor(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_refactor(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_l_refactor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_refactor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_refactor(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_zl_refactor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_refactor(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_free_symbolic(Symbolic, Common)
-    @ccall libcholmod.klu_free_symbolic(Symbolic::Ptr{Ptr{klu_symbolic}}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_free_symbolic(Symbolic::Ptr{Ptr{klu_symbolic}}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_free_symbolic(arg1, arg2)
-    @ccall libcholmod.klu_l_free_symbolic(arg1::Ptr{Ptr{klu_l_symbolic}}, arg2::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_free_symbolic(arg1::Ptr{Ptr{klu_l_symbolic}}, arg2::Ptr{klu_l_common})::Clong
 end
 
 function klu_free_numeric(Numeric, Common)
-    @ccall libcholmod.klu_free_numeric(Numeric::Ptr{Ptr{klu_numeric}}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_free_numeric(Numeric::Ptr{Ptr{klu_numeric}}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_free_numeric(Numeric, Common)
-    @ccall libcholmod.klu_z_free_numeric(Numeric::Ptr{Ptr{klu_numeric}}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_free_numeric(Numeric::Ptr{Ptr{klu_numeric}}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_free_numeric(arg1, arg2)
-    @ccall libcholmod.klu_l_free_numeric(arg1::Ptr{Ptr{klu_l_numeric}}, arg2::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_free_numeric(arg1::Ptr{Ptr{klu_l_numeric}}, arg2::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_free_numeric(arg1, arg2)
-    @ccall libcholmod.klu_zl_free_numeric(arg1::Ptr{Ptr{klu_l_numeric}}, arg2::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_free_numeric(arg1::Ptr{Ptr{klu_l_numeric}}, arg2::Ptr{klu_l_common})::Clong
 end
 
 function klu_sort(Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_sort(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_sort(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_sort(Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_z_sort(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_sort(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_sort(arg1, arg2, arg3)
-    @ccall libcholmod.klu_l_sort(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_sort(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_sort(arg1, arg2, arg3)
-    @ccall libcholmod.klu_zl_sort(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_sort(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
 end
 
 function klu_flops(Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_flops(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_flops(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_flops(Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_z_flops(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_flops(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_flops(arg1, arg2, arg3)
-    @ccall libcholmod.klu_l_flops(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_flops(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_flops(arg1, arg2, arg3)
-    @ccall libcholmod.klu_zl_flops(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_flops(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
 end
 
 function klu_rgrowth(Ap, Ai, Ax, Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_rgrowth(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_rgrowth(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_rgrowth(Ap, Ai, Ax, Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_z_rgrowth(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_rgrowth(Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_rgrowth(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_l_rgrowth(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_rgrowth(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_rgrowth(arg1, arg2, arg3, arg4, arg5, arg6)
-    @ccall libcholmod.klu_zl_rgrowth(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_rgrowth(arg1::Ptr{Clong}, arg2::Ptr{Clong}, arg3::Ptr{Cdouble}, arg4::Ptr{klu_l_symbolic}, arg5::Ptr{klu_l_numeric}, arg6::Ptr{klu_l_common})::Clong
 end
 
 function klu_condest(Ap, Ax, Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_condest(Ap::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_condest(Ap::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_condest(Ap, Ax, Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_z_condest(Ap::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_condest(Ap::Ptr{Cint}, Ax::Ptr{Cdouble}, Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_condest(arg1, arg2, arg3, arg4, arg5)
-    @ccall libcholmod.klu_l_condest(arg1::Ptr{Clong}, arg2::Ptr{Cdouble}, arg3::Ptr{klu_l_symbolic}, arg4::Ptr{klu_l_numeric}, arg5::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_condest(arg1::Ptr{Clong}, arg2::Ptr{Cdouble}, arg3::Ptr{klu_l_symbolic}, arg4::Ptr{klu_l_numeric}, arg5::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_condest(arg1, arg2, arg3, arg4, arg5)
-    @ccall libcholmod.klu_zl_condest(arg1::Ptr{Clong}, arg2::Ptr{Cdouble}, arg3::Ptr{klu_l_symbolic}, arg4::Ptr{klu_l_numeric}, arg5::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_condest(arg1::Ptr{Clong}, arg2::Ptr{Cdouble}, arg3::Ptr{klu_l_symbolic}, arg4::Ptr{klu_l_numeric}, arg5::Ptr{klu_l_common})::Clong
 end
 
 function klu_rcond(Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_rcond(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_rcond(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_rcond(Symbolic, Numeric, Common)
-    @ccall libcholmod.klu_z_rcond(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_rcond(Symbolic::Ptr{klu_symbolic}, Numeric::Ptr{klu_numeric}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_rcond(arg1, arg2, arg3)
-    @ccall libcholmod.klu_l_rcond(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_rcond(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_rcond(arg1, arg2, arg3)
-    @ccall libcholmod.klu_zl_rcond(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_rcond(arg1::Ptr{klu_l_symbolic}, arg2::Ptr{klu_l_numeric}, arg3::Ptr{klu_l_common})::Clong
 end
 
 function klu_scale(scale, n, Ap, Ai, Ax, Rs, W, Common)
-    @ccall libcholmod.klu_scale(scale::Cint, n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Rs::Ptr{Cdouble}, W::Ptr{Cint}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_scale(scale::Cint, n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Rs::Ptr{Cdouble}, W::Ptr{Cint}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_scale(scale, n, Ap, Ai, Ax, Rs, W, Common)
-    @ccall libcholmod.klu_z_scale(scale::Cint, n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Rs::Ptr{Cdouble}, W::Ptr{Cint}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_scale(scale::Cint, n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, Ax::Ptr{Cdouble}, Rs::Ptr{Cdouble}, W::Ptr{Cint}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_scale(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-    @ccall libcholmod.klu_l_scale(arg1::Clong, arg2::Clong, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Cdouble}, arg7::Ptr{Clong}, arg8::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_scale(arg1::Clong, arg2::Clong, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Cdouble}, arg7::Ptr{Clong}, arg8::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_scale(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-    @ccall libcholmod.klu_zl_scale(arg1::Clong, arg2::Clong, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Cdouble}, arg7::Ptr{Clong}, arg8::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_scale(arg1::Clong, arg2::Clong, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Cdouble}, arg7::Ptr{Clong}, arg8::Ptr{klu_l_common})::Clong
 end
 
 function klu_extract(Numeric, Symbolic, Lp, Li, Lx, Up, Ui, Ux, Fp, Fi, Fx, P, Q, Rs, R, Common)
-    @ccall libcholmod.klu_extract(Numeric::Ptr{klu_numeric}, Symbolic::Ptr{klu_symbolic}, Lp::Ptr{Cint}, Li::Ptr{Cint}, Lx::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, Fp::Ptr{Cint}, Fi::Ptr{Cint}, Fx::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rs::Ptr{Cdouble}, R::Ptr{Cint}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_extract(Numeric::Ptr{klu_numeric}, Symbolic::Ptr{klu_symbolic}, Lp::Ptr{Cint}, Li::Ptr{Cint}, Lx::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, Fp::Ptr{Cint}, Fi::Ptr{Cint}, Fx::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rs::Ptr{Cdouble}, R::Ptr{Cint}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_z_extract(Numeric, Symbolic, Lp, Li, Lx, Lz, Up, Ui, Ux, Uz, Fp, Fi, Fx, Fz, P, Q, Rs, R, Common)
-    @ccall libcholmod.klu_z_extract(Numeric::Ptr{klu_numeric}, Symbolic::Ptr{klu_symbolic}, Lp::Ptr{Cint}, Li::Ptr{Cint}, Lx::Ptr{Cdouble}, Lz::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, Uz::Ptr{Cdouble}, Fp::Ptr{Cint}, Fi::Ptr{Cint}, Fx::Ptr{Cdouble}, Fz::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rs::Ptr{Cdouble}, R::Ptr{Cint}, Common::Ptr{klu_common})::Cint
+    @ccall libklu.klu_z_extract(Numeric::Ptr{klu_numeric}, Symbolic::Ptr{klu_symbolic}, Lp::Ptr{Cint}, Li::Ptr{Cint}, Lx::Ptr{Cdouble}, Lz::Ptr{Cdouble}, Up::Ptr{Cint}, Ui::Ptr{Cint}, Ux::Ptr{Cdouble}, Uz::Ptr{Cdouble}, Fp::Ptr{Cint}, Fi::Ptr{Cint}, Fx::Ptr{Cdouble}, Fz::Ptr{Cdouble}, P::Ptr{Cint}, Q::Ptr{Cint}, Rs::Ptr{Cdouble}, R::Ptr{Cint}, Common::Ptr{klu_common})::Cint
 end
 
 function klu_l_extract(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)
-    @ccall libcholmod.klu_l_extract(arg1::Ptr{klu_l_numeric}, arg2::Ptr{klu_l_symbolic}, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Clong}, arg7::Ptr{Clong}, arg8::Ptr{Cdouble}, arg9::Ptr{Clong}, arg10::Ptr{Clong}, arg11::Ptr{Cdouble}, arg12::Ptr{Clong}, arg13::Ptr{Clong}, arg14::Ptr{Cdouble}, arg15::Ptr{Clong}, arg16::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_l_extract(arg1::Ptr{klu_l_numeric}, arg2::Ptr{klu_l_symbolic}, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Clong}, arg7::Ptr{Clong}, arg8::Ptr{Cdouble}, arg9::Ptr{Clong}, arg10::Ptr{Clong}, arg11::Ptr{Cdouble}, arg12::Ptr{Clong}, arg13::Ptr{Clong}, arg14::Ptr{Cdouble}, arg15::Ptr{Clong}, arg16::Ptr{klu_l_common})::Clong
 end
 
 function klu_zl_extract(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19)
-    @ccall libcholmod.klu_zl_extract(arg1::Ptr{klu_l_numeric}, arg2::Ptr{klu_l_symbolic}, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Cdouble}, arg7::Ptr{Clong}, arg8::Ptr{Clong}, arg9::Ptr{Cdouble}, arg10::Ptr{Cdouble}, arg11::Ptr{Clong}, arg12::Ptr{Clong}, arg13::Ptr{Cdouble}, arg14::Ptr{Cdouble}, arg15::Ptr{Clong}, arg16::Ptr{Clong}, arg17::Ptr{Cdouble}, arg18::Ptr{Clong}, arg19::Ptr{klu_l_common})::Clong
+    @ccall libklu.klu_zl_extract(arg1::Ptr{klu_l_numeric}, arg2::Ptr{klu_l_symbolic}, arg3::Ptr{Clong}, arg4::Ptr{Clong}, arg5::Ptr{Cdouble}, arg6::Ptr{Cdouble}, arg7::Ptr{Clong}, arg8::Ptr{Clong}, arg9::Ptr{Cdouble}, arg10::Ptr{Cdouble}, arg11::Ptr{Clong}, arg12::Ptr{Clong}, arg13::Ptr{Cdouble}, arg14::Ptr{Cdouble}, arg15::Ptr{Clong}, arg16::Ptr{Clong}, arg17::Ptr{Cdouble}, arg18::Ptr{Clong}, arg19::Ptr{klu_l_common})::Clong
 end
 
 function klu_malloc(n, size, Common)
-    @ccall libcholmod.klu_malloc(n::Csize_t, size::Csize_t, Common::Ptr{klu_common})::Ptr{Cvoid}
+    @ccall libklu.klu_malloc(n::Csize_t, size::Csize_t, Common::Ptr{klu_common})::Ptr{Cvoid}
 end
 
 function klu_free(p, n, size, Common)
-    @ccall libcholmod.klu_free(p::Ptr{Cvoid}, n::Csize_t, size::Csize_t, Common::Ptr{klu_common})::Ptr{Cvoid}
+    @ccall libklu.klu_free(p::Ptr{Cvoid}, n::Csize_t, size::Csize_t, Common::Ptr{klu_common})::Ptr{Cvoid}
 end
 
 function klu_realloc(nnew, nold, size, p, Common)
-    @ccall libcholmod.klu_realloc(nnew::Csize_t, nold::Csize_t, size::Csize_t, p::Ptr{Cvoid}, Common::Ptr{klu_common})::Ptr{Cvoid}
+    @ccall libklu.klu_realloc(nnew::Csize_t, nold::Csize_t, size::Csize_t, p::Ptr{Cvoid}, Common::Ptr{klu_common})::Ptr{Cvoid}
 end
 
 function klu_l_malloc(arg1, arg2, arg3)
-    @ccall libcholmod.klu_l_malloc(arg1::Csize_t, arg2::Csize_t, arg3::Ptr{klu_l_common})::Ptr{Cvoid}
+    @ccall libklu.klu_l_malloc(arg1::Csize_t, arg2::Csize_t, arg3::Ptr{klu_l_common})::Ptr{Cvoid}
 end
 
 function klu_l_free(arg1, arg2, arg3, arg4)
-    @ccall libcholmod.klu_l_free(arg1::Ptr{Cvoid}, arg2::Csize_t, arg3::Csize_t, arg4::Ptr{klu_l_common})::Ptr{Cvoid}
+    @ccall libklu.klu_l_free(arg1::Ptr{Cvoid}, arg2::Csize_t, arg3::Csize_t, arg4::Ptr{klu_l_common})::Ptr{Cvoid}
 end
 
 function klu_l_realloc(arg1, arg2, arg3, arg4, arg5)
-    @ccall libcholmod.klu_l_realloc(arg1::Csize_t, arg2::Csize_t, arg3::Csize_t, arg4::Ptr{Cvoid}, arg5::Ptr{klu_l_common})::Ptr{Cvoid}
+    @ccall libklu.klu_l_realloc(arg1::Csize_t, arg2::Csize_t, arg3::Csize_t, arg4::Ptr{Cvoid}, arg5::Ptr{klu_l_common})::Ptr{Cvoid}
+end
+
+function amd_order(n, Ap, Ai, P, Control, Info)
+    @ccall libamd.amd_order(n::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint}, P::Ptr{Cint}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cint
+end
+
+function amd_l_order(n, Ap, Ai, P, Control, Info)
+    @ccall libamd.amd_l_order(n::Clong, Ap::Ptr{Clong}, Ai::Ptr{Clong}, P::Ptr{Clong}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Clong
+end
+
+function amd_2(n, Pe, Iw, Len, iwlen, pfree, Nv, Next, Last, Head, Elen, Degree, W, Control, Info)
+    @ccall libamd.amd_2(n::Cint, Pe::Ptr{Cint}, Iw::Ptr{Cint}, Len::Ptr{Cint}, iwlen::Cint, pfree::Cint, Nv::Ptr{Cint}, Next::Ptr{Cint}, Last::Ptr{Cint}, Head::Ptr{Cint}, Elen::Ptr{Cint}, Degree::Ptr{Cint}, W::Ptr{Cint}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
+end
+
+function amd_l2(n, Pe, Iw, Len, iwlen, pfree, Nv, Next, Last, Head, Elen, Degree, W, Control, Info)
+    @ccall libamd.amd_l2(n::Clong, Pe::Ptr{Clong}, Iw::Ptr{Clong}, Len::Ptr{Clong}, iwlen::Clong, pfree::Clong, Nv::Ptr{Clong}, Next::Ptr{Clong}, Last::Ptr{Clong}, Head::Ptr{Clong}, Elen::Ptr{Clong}, Degree::Ptr{Clong}, W::Ptr{Clong}, Control::Ptr{Cdouble}, Info::Ptr{Cdouble})::Cvoid
+end
+
+function amd_valid(n_row, n_col, Ap, Ai)
+    @ccall libamd.amd_valid(n_row::Cint, n_col::Cint, Ap::Ptr{Cint}, Ai::Ptr{Cint})::Cint
+end
+
+function amd_l_valid(n_row, n_col, Ap, Ai)
+    @ccall libamd.amd_l_valid(n_row::Clong, n_col::Clong, Ap::Ptr{Clong}, Ai::Ptr{Clong})::Clong
+end
+
+function amd_defaults(Control)
+    @ccall libamd.amd_defaults(Control::Ptr{Cdouble})::Cvoid
+end
+
+function amd_l_defaults(Control)
+    @ccall libamd.amd_l_defaults(Control::Ptr{Cdouble})::Cvoid
+end
+
+function amd_control(Control)
+    @ccall libamd.amd_control(Control::Ptr{Cdouble})::Cvoid
+end
+
+function amd_l_control(Control)
+    @ccall libamd.amd_l_control(Control::Ptr{Cdouble})::Cvoid
+end
+
+function amd_info(Info)
+    @ccall libamd.amd_info(Info::Ptr{Cdouble})::Cvoid
+end
+
+function amd_l_info(Info)
+    @ccall libamd.amd_l_info(Info::Ptr{Cdouble})::Cvoid
+end
+
+function colamd_recommended(nnz, n_row, n_col)
+    @ccall libcolamd.colamd_recommended(nnz::Cint, n_row::Cint, n_col::Cint)::Csize_t
+end
+
+function colamd_l_recommended(nnz, n_row, n_col)
+    @ccall libcolamd.colamd_l_recommended(nnz::Clong, n_row::Clong, n_col::Clong)::Csize_t
+end
+
+function colamd_set_defaults(knobs)
+    @ccall libcolamd.colamd_set_defaults(knobs::Ptr{Cdouble})::Cvoid
+end
+
+function colamd_l_set_defaults(knobs)
+    @ccall libcolamd.colamd_l_set_defaults(knobs::Ptr{Cdouble})::Cvoid
+end
+
+function colamd(n_row, n_col, Alen, A, p, knobs, stats)
+    @ccall libcolamd.colamd(n_row::Cint, n_col::Cint, Alen::Cint, A::Ptr{Cint}, p::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint})::Cint
+end
+
+function colamd_l(n_row, n_col, Alen, A, p, knobs, stats)
+    @ccall libcolamd.colamd_l(n_row::Clong, n_col::Clong, Alen::Clong, A::Ptr{Clong}, p::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong})::Clong
+end
+
+function symamd(n, A, p, perm, knobs, stats, allocate, release)
+    @ccall libcolamd.symamd(n::Cint, A::Ptr{Cint}, p::Ptr{Cint}, perm::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint}, allocate::Ptr{Cvoid}, release::Ptr{Cvoid})::Cint
+end
+
+function symamd_l(n, A, p, perm, knobs, stats, allocate, release)
+    @ccall libcolamd.symamd_l(n::Clong, A::Ptr{Clong}, p::Ptr{Clong}, perm::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong}, allocate::Ptr{Cvoid}, release::Ptr{Cvoid})::Clong
+end
+
+function colamd_report(stats)
+    @ccall libcolamd.colamd_report(stats::Ptr{Cint})::Cvoid
+end
+
+function colamd_l_report(stats)
+    @ccall libcolamd.colamd_l_report(stats::Ptr{Clong})::Cvoid
+end
+
+function symamd_report(stats)
+    @ccall libcolamd.symamd_report(stats::Ptr{Cint})::Cvoid
+end
+
+function symamd_l_report(stats)
+    @ccall libcolamd.symamd_l_report(stats::Ptr{Clong})::Cvoid
+end
+
+function ccolamd_recommended(nnz, n_row, n_col)
+    @ccall libcolamd.ccolamd_recommended(nnz::Cint, n_row::Cint, n_col::Cint)::Csize_t
+end
+
+function ccolamd_l_recommended(nnz, n_row, n_col)
+    @ccall libcolamd.ccolamd_l_recommended(nnz::Clong, n_row::Clong, n_col::Clong)::Csize_t
+end
+
+function ccolamd_set_defaults(knobs)
+    @ccall libcolamd.ccolamd_set_defaults(knobs::Ptr{Cdouble})::Cvoid
+end
+
+function ccolamd_l_set_defaults(knobs)
+    @ccall libcolamd.ccolamd_l_set_defaults(knobs::Ptr{Cdouble})::Cvoid
+end
+
+function ccolamd(n_row, n_col, Alen, A, p, knobs, stats, cmember)
+    @ccall libcolamd.ccolamd(n_row::Cint, n_col::Cint, Alen::Cint, A::Ptr{Cint}, p::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint}, cmember::Ptr{Cint})::Cint
+end
+
+function ccolamd_l(n_row, n_col, Alen, A, p, knobs, stats, cmember)
+    @ccall libcolamd.ccolamd_l(n_row::Clong, n_col::Clong, Alen::Clong, A::Ptr{Clong}, p::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong}, cmember::Ptr{Clong})::Clong
+end
+
+function csymamd(n, A, p, perm, knobs, stats, allocate, release, cmember, stype)
+    @ccall libcolamd.csymamd(n::Cint, A::Ptr{Cint}, p::Ptr{Cint}, perm::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint}, allocate::Ptr{Cvoid}, release::Ptr{Cvoid}, cmember::Ptr{Cint}, stype::Cint)::Cint
+end
+
+function csymamd_l(n, A, p, perm, knobs, stats, allocate, release, cmember, stype)
+    @ccall libcolamd.csymamd_l(n::Clong, A::Ptr{Clong}, p::Ptr{Clong}, perm::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong}, allocate::Ptr{Cvoid}, release::Ptr{Cvoid}, cmember::Ptr{Clong}, stype::Clong)::Clong
+end
+
+function ccolamd_report(stats)
+    @ccall libcolamd.ccolamd_report(stats::Ptr{Cint})::Cvoid
+end
+
+function ccolamd_l_report(stats)
+    @ccall libcolamd.ccolamd_l_report(stats::Ptr{Clong})::Cvoid
+end
+
+function csymamd_report(stats)
+    @ccall libcolamd.csymamd_report(stats::Ptr{Cint})::Cvoid
+end
+
+function csymamd_l_report(stats)
+    @ccall libcolamd.csymamd_l_report(stats::Ptr{Clong})::Cvoid
+end
+
+function ccolamd2(n_row, n_col, Alen, A, p, knobs, stats, Front_npivcol, Front_nrows, Front_ncols, Front_parent, Front_cols, p_nfr, InFront, cmember)
+    @ccall libcolamd.ccolamd2(n_row::Cint, n_col::Cint, Alen::Cint, A::Ptr{Cint}, p::Ptr{Cint}, knobs::Ptr{Cdouble}, stats::Ptr{Cint}, Front_npivcol::Ptr{Cint}, Front_nrows::Ptr{Cint}, Front_ncols::Ptr{Cint}, Front_parent::Ptr{Cint}, Front_cols::Ptr{Cint}, p_nfr::Ptr{Cint}, InFront::Ptr{Cint}, cmember::Ptr{Cint})::Cint
+end
+
+function ccolamd2_l(n_row, n_col, Alen, A, p, knobs, stats, Front_npivcol, Front_nrows, Front_ncols, Front_parent, Front_cols, p_nfr, InFront, cmember)
+    @ccall libcolamd.ccolamd2_l(n_row::Clong, n_col::Clong, Alen::Clong, A::Ptr{Clong}, p::Ptr{Clong}, knobs::Ptr{Cdouble}, stats::Ptr{Clong}, Front_npivcol::Ptr{Clong}, Front_nrows::Ptr{Clong}, Front_ncols::Ptr{Clong}, Front_parent::Ptr{Clong}, Front_cols::Ptr{Clong}, p_nfr::Ptr{Clong}, InFront::Ptr{Clong}, cmember::Ptr{Clong})::Clong
+end
+
+function ccolamd_apply_order(Front, Order, Temp, nn, nfr)
+    @ccall libcolamd.ccolamd_apply_order(Front::Ptr{Cint}, Order::Ptr{Cint}, Temp::Ptr{Cint}, nn::Cint, nfr::Cint)::Cvoid
+end
+
+function ccolamd_l_apply_order(Front, Order, Temp, nn, nfr)
+    @ccall libcolamd.ccolamd_l_apply_order(Front::Ptr{Clong}, Order::Ptr{Clong}, Temp::Ptr{Clong}, nn::Clong, nfr::Clong)::Cvoid
+end
+
+function ccolamd_fsize(nn, MaxFsize, Fnrows, Fncols, Parent, Npiv)
+    @ccall libcolamd.ccolamd_fsize(nn::Cint, MaxFsize::Ptr{Cint}, Fnrows::Ptr{Cint}, Fncols::Ptr{Cint}, Parent::Ptr{Cint}, Npiv::Ptr{Cint})::Cvoid
+end
+
+function ccolamd_l_fsize(nn, MaxFsize, Fnrows, Fncols, Parent, Npiv)
+    @ccall libcolamd.ccolamd_l_fsize(nn::Clong, MaxFsize::Ptr{Clong}, Fnrows::Ptr{Clong}, Fncols::Ptr{Clong}, Parent::Ptr{Clong}, Npiv::Ptr{Clong})::Cvoid
+end
+
+function ccolamd_postorder(nn, Parent, Npiv, Fsize, Order, Child, Sibling, Stack, Front_cols, cmember)
+    @ccall libcolamd.ccolamd_postorder(nn::Cint, Parent::Ptr{Cint}, Npiv::Ptr{Cint}, Fsize::Ptr{Cint}, Order::Ptr{Cint}, Child::Ptr{Cint}, Sibling::Ptr{Cint}, Stack::Ptr{Cint}, Front_cols::Ptr{Cint}, cmember::Ptr{Cint})::Cvoid
+end
+
+function ccolamd_l_postorder(nn, Parent, Npiv, Fsize, Order, Child, Sibling, Stack, Front_cols, cmember)
+    @ccall libcolamd.ccolamd_l_postorder(nn::Clong, Parent::Ptr{Clong}, Npiv::Ptr{Clong}, Fsize::Ptr{Clong}, Order::Ptr{Clong}, Child::Ptr{Clong}, Sibling::Ptr{Clong}, Stack::Ptr{Clong}, Front_cols::Ptr{Clong}, cmember::Ptr{Clong})::Cvoid
+end
+
+function ccolamd_post_tree(root, k, Child, Sibling, Order, Stack)
+    @ccall libcolamd.ccolamd_post_tree(root::Cint, k::Cint, Child::Ptr{Cint}, Sibling::Ptr{Cint}, Order::Ptr{Cint}, Stack::Ptr{Cint})::Cint
+end
+
+function ccolamd_l_post_tree(root, k, Child, Sibling, Order, Stack)
+    @ccall libcolamd.ccolamd_l_post_tree(root::Clong, k::Clong, Child::Ptr{Clong}, Sibling::Ptr{Clong}, Order::Ptr{Clong}, Stack::Ptr{Clong})::Clong
 end
 
 const _FILE_OFFSET_BITS = 64
@@ -2807,66 +2895,6 @@ const Complex = Float64
 const UMFPACK_INFO = 90
 
 const UMFPACK_CONTROL = 20
-
-const AMD_CONTROL = 5
-
-const AMD_INFO = 20
-
-const AMD_DENSE = 0
-
-const AMD_AGGRESSIVE = 1
-
-const AMD_DEFAULT_DENSE = 10.0
-
-const AMD_DEFAULT_AGGRESSIVE = 1
-
-const AMD_STATUS = 0
-
-const AMD_N = 1
-
-const AMD_NZ = 2
-
-const AMD_SYMMETRY = 3
-
-const AMD_NZDIAG = 4
-
-const AMD_NZ_A_PLUS_AT = 5
-
-const AMD_NDENSE = 6
-
-const AMD_MEMORY = 7
-
-const AMD_NCMPA = 8
-
-const AMD_LNZ = 9
-
-const AMD_NDIV = 10
-
-const AMD_NMULTSUBS_LDL = 11
-
-const AMD_NMULTSUBS_LU = 12
-
-const AMD_DMAX = 13
-
-const AMD_OK = 0
-
-const AMD_OUT_OF_MEMORY = -1
-
-const AMD_INVALID = -2
-
-const AMD_OK_BUT_JUMBLED = 1
-
-const AMD_DATE = "May 4, 2016"
-
-AMD_VERSION_CODE(main, sub) = main * 1000 + sub
-
-const AMD_MAIN_VERSION = 2
-
-const AMD_SUB_VERSION = 4
-
-const AMD_SUBSUB_VERSION = 6
-
-const AMD_VERSION = AMD_VERSION_CODE(AMD_MAIN_VERSION, AMD_SUB_VERSION)
 
 const UMFPACK_VERSION = "UMFPACK V5.7.9 (Oct 20, 2019)"
 
@@ -3221,6 +3249,100 @@ const UMFPACK_Ut = 13
 
 const UMFPACK_Uat = 14
 
+const BTF_DATE = "May 4, 2016"
+
+BTF_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const BTF_MAIN_VERSION = 1
+
+const BTF_SUB_VERSION = 2
+
+const BTF_SUBSUB_VERSION = 6
+
+const BTF_VERSION = BTF_VERSION_CODE(BTF_MAIN_VERSION, BTF_SUB_VERSION)
+
+const KLU_OK = 0
+
+const KLU_SINGULAR = 1
+
+const KLU_OUT_OF_MEMORY = -2
+
+const KLU_INVALID = -3
+
+const KLU_TOO_LARGE = -4
+
+const KLU_DATE = "Mar 12, 2018"
+
+KLU_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const KLU_MAIN_VERSION = 1
+
+const KLU_SUB_VERSION = 3
+
+const KLU_SUBSUB_VERSION = 9
+
+const KLU_VERSION = KLU_VERSION_CODE(KLU_MAIN_VERSION, KLU_SUB_VERSION)
+
+const AMD_CONTROL = 5
+
+const AMD_INFO = 20
+
+const AMD_DENSE = 0
+
+const AMD_AGGRESSIVE = 1
+
+const AMD_DEFAULT_DENSE = 10.0
+
+const AMD_DEFAULT_AGGRESSIVE = 1
+
+const AMD_STATUS = 0
+
+const AMD_N = 1
+
+const AMD_NZ = 2
+
+const AMD_SYMMETRY = 3
+
+const AMD_NZDIAG = 4
+
+const AMD_NZ_A_PLUS_AT = 5
+
+const AMD_NDENSE = 6
+
+const AMD_MEMORY = 7
+
+const AMD_NCMPA = 8
+
+const AMD_LNZ = 9
+
+const AMD_NDIV = 10
+
+const AMD_NMULTSUBS_LDL = 11
+
+const AMD_NMULTSUBS_LU = 12
+
+const AMD_DMAX = 13
+
+const AMD_OK = 0
+
+const AMD_OUT_OF_MEMORY = -1
+
+const AMD_INVALID = -2
+
+const AMD_OK_BUT_JUMBLED = 1
+
+const AMD_DATE = "May 4, 2016"
+
+AMD_VERSION_CODE(main, sub) = main * 1000 + sub
+
+const AMD_MAIN_VERSION = 2
+
+const AMD_SUB_VERSION = 4
+
+const AMD_SUBSUB_VERSION = 6
+
+const AMD_VERSION = AMD_VERSION_CODE(AMD_MAIN_VERSION, AMD_SUB_VERSION)
+
 const COLAMD_DATE = "May 4, 2016"
 
 COLAMD_VERSION_CODE(main, sub) = main * 1000 + sub
@@ -3279,37 +3401,71 @@ const COLAMD_ERROR_out_of_memory = -10
 
 const COLAMD_ERROR_internal_error = -999
 
-const BTF_DATE = "May 4, 2016"
+const CCOLAMD_DATE = "May 4, 2016"
 
-BTF_VERSION_CODE(main, sub) = main * 1000 + sub
+const CCOLAMD_MAIN_VERSION = 2
 
-const BTF_MAIN_VERSION = 1
+const CCOLAMD_SUB_VERSION = 9
 
-const BTF_SUB_VERSION = 2
+const CCOLAMD_SUBSUB_VERSION = 6
 
-const BTF_SUBSUB_VERSION = 6
+const CCOLAMD_VERSION = CCOLAMD_VERSION_CODE(CCOLAMD_MAIN_VERSION, CCOLAMD_SUB_VERSION)
 
-const BTF_VERSION = BTF_VERSION_CODE(BTF_MAIN_VERSION, BTF_SUB_VERSION)
+const CCOLAMD_KNOBS = 20
 
-const KLU_OK = 0
+const CCOLAMD_STATS = 20
 
-const KLU_SINGULAR = 1
+const CCOLAMD_DENSE_ROW = 0
 
-const KLU_OUT_OF_MEMORY = -2
+const CCOLAMD_DENSE_COL = 1
 
-const KLU_INVALID = -3
+const CCOLAMD_AGGRESSIVE = 2
 
-const KLU_TOO_LARGE = -4
+const CCOLAMD_LU = 3
 
-const KLU_DATE = "Mar 12, 2018"
+const CCOLAMD_DEFRAG_COUNT = 2
 
-KLU_VERSION_CODE(main, sub) = main * 1000 + sub
+const CCOLAMD_STATUS = 3
 
-const KLU_MAIN_VERSION = 1
+const CCOLAMD_INFO1 = 4
 
-const KLU_SUB_VERSION = 3
+const CCOLAMD_INFO2 = 5
 
-const KLU_SUBSUB_VERSION = 9
+const CCOLAMD_INFO3 = 6
 
-const KLU_VERSION = KLU_VERSION_CODE(KLU_MAIN_VERSION, KLU_SUB_VERSION)
+const CCOLAMD_EMPTY_ROW = 7
+
+const CCOLAMD_EMPTY_COL = 8
+
+const CCOLAMD_NEWLY_EMPTY_ROW = 9
+
+const CCOLAMD_NEWLY_EMPTY_COL = 10
+
+const CCOLAMD_OK = 0
+
+const CCOLAMD_OK_BUT_JUMBLED = 1
+
+const CCOLAMD_ERROR_A_not_present = -1
+
+const CCOLAMD_ERROR_p_not_present = -2
+
+const CCOLAMD_ERROR_nrow_negative = -3
+
+const CCOLAMD_ERROR_ncol_negative = -4
+
+const CCOLAMD_ERROR_nnz_negative = -5
+
+const CCOLAMD_ERROR_p0_nonzero = -6
+
+const CCOLAMD_ERROR_A_too_small = -7
+
+const CCOLAMD_ERROR_col_length_negative = -8
+
+const CCOLAMD_ERROR_row_index_out_of_bounds = -9
+
+const CCOLAMD_ERROR_out_of_memory = -10
+
+const CCOLAMD_ERROR_invalid_cmember = -11
+
+const CCOLAMD_ERROR_internal_error = -999
 
