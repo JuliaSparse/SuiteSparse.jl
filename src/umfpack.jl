@@ -16,6 +16,7 @@ import Serialization: AbstractSerializer, deserialize
 
 import ..increment, ..increment!, ..decrement, ..decrement!
 
+using ..LibSuiteSparse
 import ..LibSuiteSparse:
     SuiteSparse_long,
     umfpack_dl_defaults,
