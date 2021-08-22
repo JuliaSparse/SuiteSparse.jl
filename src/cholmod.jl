@@ -160,7 +160,7 @@ function __init__()
         ### Check if the linked library is compatible with the Julia code
         if Libdl.dlsym_e(Libdl.dlopen("libcholmod"), :cholmod_version) != C_NULL
             current_version_array = Vector{Cint}(undef, 3)
-            ccall((:cholmod_version, :libcholmod), Cint, (Ptr{Cint},), current_version_array)
+            cholmod_version(current_version_array)
             current_version = VersionNumber(current_version_array...)
         else # CHOLMOD < 2.1.1 does not include cholmod_version()
             current_version = v"0.0.0"
