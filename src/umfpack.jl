@@ -734,15 +734,10 @@ end
 for Tv in (:Float64, :ComplexF64), Ti in UmfpackIndexTypes
     f = Symbol(umf_nm("free_symbolic", Tv, Ti))
     @eval begin
-        function ($f)(symb::Ptr{Cvoid})
-            tmp = [symb]
-            $f(tmp)
-        end
-
         function umfpack_free_symbolic(lu::UmfpackLU{$Tv,$Ti})
             if lu.symbolic == C_NULL return lu end
             umfpack_free_numeric(lu)
-            ($f)(lu.symbolic)
+            $f([lu.symbolic])
             lu.symbolic = C_NULL
             return lu
         end
@@ -750,13 +745,10 @@ for Tv in (:Float64, :ComplexF64), Ti in UmfpackIndexTypes
 
     f = Symbol(umf_nm("free_numeric", Tv, Ti))
     @eval begin
-        function ($f)(num::Ptr{Cvoid})
-            tmp = [num]
-            $f(tmp)
-        end
+
         function umfpack_free_numeric(lu::UmfpackLU{$Tv,$Ti})
             if lu.numeric == C_NULL return lu end
-            ($f)(lu.numeric)
+            $f([lu.numeric])
             lu.numeric = C_NULL
             return lu
         end
