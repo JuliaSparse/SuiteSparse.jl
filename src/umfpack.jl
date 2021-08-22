@@ -346,18 +346,18 @@ end
 umf_nm(nm,Tv,Ti) = "umfpack_" * (Tv === :Float64 ? "d" : "z") * (Ti === :Int64 ? "l_" : "i_") * nm
 
 for itype in UmfpackIndexTypes
-    sym_r = umf_nm("symbolic", :Float64, itype)
-    sym_c = umf_nm("symbolic", :ComplexF64, itype)
-    num_r = umf_nm("numeric", :Float64, itype)
-    num_c = umf_nm("numeric", :ComplexF64, itype)
-    sol_r = umf_nm("solve", :Float64, itype)
-    sol_c = umf_nm("solve", :ComplexF64, itype)
-    det_r = umf_nm("get_determinant", :Float64, itype)
-    det_z = umf_nm("get_determinant", :ComplexF64, itype)
-    lunz_r = umf_nm("get_lunz", :Float64, itype)
-    lunz_z = umf_nm("get_lunz", :ComplexF64, itype)
-    get_num_r = umf_nm("get_numeric", :Float64, itype)
-    get_num_z = umf_nm("get_numeric", :ComplexF64, itype)
+    sym_r = Symbol(umf_nm("symbolic", :Float64, itype))
+    sym_c = Symbol(umf_nm("symbolic", :ComplexF64, itype))
+    num_r = Symbol(umf_nm("numeric", :Float64, itype))
+    num_c = Symbol(umf_nm("numeric", :ComplexF64, itype))
+    sol_r = Symbol(umf_nm("solve", :Float64, itype))
+    sol_c = Symbol(umf_nm("solve", :ComplexF64, itype))
+    det_r = Symbol(umf_nm("get_determinant", :Float64, itype))
+    det_z = Symbol(umf_nm("get_determinant", :ComplexF64, itype))
+    lunz_r = Symbol(umf_nm("get_lunz", :Float64, itype))
+    lunz_z = Symbol(umf_nm("get_lunz", :ComplexF64, itype))
+    get_num_r = Symbol(umf_nm("get_numeric", :Float64, itype))
+    get_num_z = Symbol(umf_nm("get_numeric", :ComplexF64, itype))
     @eval begin
         function umfpack_symbolic!(U::UmfpackLU{Float64,$itype})
             if U.symbolic != C_NULL return U end
