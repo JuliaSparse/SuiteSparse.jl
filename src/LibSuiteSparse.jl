@@ -4,7 +4,7 @@ module LibSuiteSparse
 const libumfpack = :libumfpack
 const libcholmod = :libcholmod
 const libspqr = :libspqr
-
+const libklu = :libklu
 # patches
 const LONG_MAX = typemax(Clong)
 if Sys.iswindows() && Sys.ARCH === :x86_64
