@@ -57,14 +57,14 @@ end
 Base.unsafe_convert(::Type{Ptr{klu_l_symbolic}}, s::Symbolic) = s.ptr
 # I'd like to leave this unrestricted, so non-SparseMatrixCSC types can integrate easily.
 # In particular C arrays. Should perhaps restrict to Ptrs, but this is already checked in the ccall.
-function Symbolic(n::Integer, Ap, Ai, common::klu_l_common_struct = klu_common)
-    return Symbolic(klu_l_analyze(n, Ap, Ai, Ref(common)))
+function Symbolic(n::Integer, Ap, Ai)
+    return Symbolic(klu_l_analyze(n, Ap, Ai, Ref(klu_common)))
 end
 
-function Symbolic(A::SparseMatrixCSC{Float64, Int64}, common::klu_l_common_struct = klu_common)
+function Symbolic(A::SparseMatrixCSC{Float64, Int64})
     n = size(A, 1)
     n == size(A, 2) || throw(ArgumentError("KLU only accepts square matrices."))
-    return Symbolic(n, decrement(A.colptr), decrement(A.rowval), common)
+    return Symbolic(n, decrement(A.colptr), decrement(A.rowval))
 end
 
 mutable struct Numeric{T<:KLUTypes} <: Factorization{T}
@@ -80,57 +80,42 @@ mutable struct Numeric{T<:KLUTypes} <: Factorization{T}
 end
 Base.unsafe_convert(::Type{Ptr{klu_l_numeric}}, n::Numeric) = n.ptr
 
-function Numeric(
-    Ap, Ai, Ax, T,
-    symbolic::Symbolic, common::klu_l_common_struct = klu_common
-)
+function Numeric(Ap, Ai, Ax, T, symbolic::Symbolic)
     println(Ap)
     println(Ai)
     println(Ax)
     println(T)
     if T == Float64
-        n = klu_l_factor(Ap, Ai, Ax, symbolic, Ref(common))
+        n = klu_l_factor(Ap, Ai, Ax, symbolic, Ref(klu_common))
     elseif T == ComplexF64
-        n = klu_zl_factor(Ap, Ai, Ax, symbolic, Ref(common))
+        n = klu_zl_factor(Ap, Ai, Ax, symbolic, Ref(klu_common))
     end
     return Numeric{T}(n)
 end
 
-function Numeric(
-    A::SparseMatrixCSC{T, Int64},
-    symbolic::Symbolic, common::klu_l_common_struct = klu_common
-) where {T<:KLUTypes}
-    return Numeric(decrement(A.colptr), decrement(A.rowval), A.nzval, T, symbolic, common)
+function Numeric(A::SparseMatrixCSC{T, Int64}, symbolic::Symbolic) where {T<:KLUTypes}
+    return Numeric(decrement(A.colptr), decrement(A.rowval), A.nzval, T, symbolic)
 end
 
 #B is the modified argument here. To match with the math it should be (num, B). But convention is
 # modified first. Thoughts?
-function solve!(
-    sym::Symbolic, num::Numeric{T}, B::StridedVecOrMat{T},
-    common::klu_l_common_struct = klu_common
-) where {T<:KLUTypes}
+function solve!(sym::Symbolic, num::Numeric{T}, B::StridedVecOrMat{T}) where {T<:KLUTypes}
     stride(B, 1) == 1 || throw(ArgumentError("B must have unit strides"))
     if T == Float64
-        klu_l_solve(sym, num, size(B, 1), size(B, 2), B, Ref(common))
+        klu_l_solve(sym, num, size(B, 1), size(B, 2), B, Ref(klu_common))
     elseif T == ComplexF64
         throw(ArgumentError("ComplexF64 not yet implmented."))
     end
     return B
 end
 
-function solve(
-    sym::Symbolic, num::Numeric{T}, B::StridedVecOrMat{T},
-    common::klu_l_common_struct = klu_common
-) where {T<:KLUTypes}
-    return solve!(sym, num, copy(B), common)
+function solve(sym::Symbolic, num::Numeric{T}, B::StridedVecOrMat{T}) where {T<:KLUTypes}
+    return solve!(sym, num, copy(B))
 end
 
-function solve(
-    A::SparseMatrixCSC{Float64, Int64}, B::StridedVecOrMat{Float64},
-    common::klu_l_common_struct = klu_common
-)
-    s = Symbolic(A, common)
-    n = Numeric(A, s, common)
+function solve(A::SparseMatrixCSC{Float64, Int64}, B::StridedVecOrMat{Float64})
+    s = Symbolic(A)
+    n = Numeric(A, s)
     return solve(s, n, B)
 end
 
