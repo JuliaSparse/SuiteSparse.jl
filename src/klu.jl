@@ -26,7 +26,9 @@ import ..LibSuiteSparse:
     klu_l_extract,
     klu_zl_extract,
     klu_l_sort,
-    klu_zl_sort
+    klu_zl_sort,
+    klu_l_refactor,
+    klu_zl_refactor
 using LinearAlgebra
 import LinearAlgebra: Factorization
 const KLUTypes = Union{Float64, ComplexF64}
@@ -259,9 +261,7 @@ function klu_factor!(K::KLUFactorization{T}) where {T}
     return K
 end
 
-
-
-function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}) where {T<:AbstractFloat}
+function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}; common = _common()) where {T<:AbstractFloat}
     if nzval != Float64
         nzval = convert(Vector{Float64}, nzval)
     end
@@ -269,7 +269,7 @@ function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}) 
     return klu_factor!(K)
 end
 
-function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}) where {T<:Complex}
+function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}; common = _common()) where {T<:Complex}
     if nzval != ComplexF64
         nzval = convert(Vector{ComplexF64}, nzval)
     end
@@ -277,10 +277,33 @@ function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}) 
     return klu_factor!(K)
 end
 
-function klu(A::SparseMatrixCSC{T, Int64}) where {T<:KLUTypes}
+function klu(A::SparseMatrixCSC{T, Int64}; common = _common()) where {T<:Union{AbstractFloat, Complex}}
     n = size(A, 1)
     n == size(A, 2) || throw(DimensionMismatch())
     return klu(n, decrement(A.colptr), decrement(A.rowval), A.nzval)
+end
+
+function klu!(K::KLUFactorization{T}, nzval::Vector{T}) where {T}
+    length(nzval) != length(K.nzval)  && throw(DimensionMismatch())
+    K.nzval = nzval
+    if T == Float64
+        ok = klu_l_refactor(K.colptr, K.rowval, K.nzval, K.symbolic, K.numeric, Ref(K.common))
+    else
+        ok = klu_zl_refactor(K.colptr, K.rowval, K.nzval, K.symbolic, K.numeric, Ref(K.common))
+    end
+    if ok == 0
+        return K
+    else
+        kluerror(K.common)
+    end
+end
+
+function klu!(K::KLUFactorization{ComplexF64}, nzval::Vector{U}) where {U<:Union{ComplexF16, ComplexF32}}
+    return klu!(K, convert(Vector{ComplexF64}, nzval))
+end
+
+function klu!(K::KLUFactorization{Float64}, nzval::Vector{U}) where {U<:Union{Float16, Float32}}
+    return klu!(K, convert(Vector{Float64}, nzval))
 end
 
 #B is the modified argument here. To match with the math it should be (num, B). But convention is
@@ -321,5 +344,10 @@ function solve(klu, B)
     X = copy(B)
     return solve!(klu, X)
 end
+
+\(klu::KLUFactorization, B::StridedVecOrMat) = solve(klu, B)
+\(klu::LinearAlgebra.AdjOrTrans{T, KLUFactorization{T}}, B::StridedVecOrMat) where {T} =
+    solve(klu, B)
+
 
 end
