@@ -315,7 +315,7 @@ function getproperty(klu::KLUFactorization{Tv, Ti}, s::Symbol) where {Tv<:KLUTyp
         s === :q && (s = :Q)
         s === :p && (s = :P)
         _extract!(klu; NamedTuple{(s,)}((out,))...)
-        if s ∈ [:q, :p, :R]
+        if s ∈ [:Q, :P, :R]
             increment!(out)
         end
         return out

@@ -15,7 +15,7 @@ using LinearAlgebra
             @test nnz(klua) == 18
             # This fails with one value wrong. No idea why
             R = Diagonal(Tv == ComplexF64 ? complex.(klua.Rs) : klua.Rs)
-            @test R \ A[klua.P, klua.Q] ≈ (klua.L * klua.U + klua.F)
+            @test R \ A[klua.p, klua.q] ≈ (klua.L * klua.U + klua.F)
 
             b = [8., 45., -3., 3., 19.]
             x = klua \ b
