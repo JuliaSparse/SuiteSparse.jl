@@ -1,37 +1,64 @@
 module KLU
 
-using SparseArrays
-import Base: (\), size, getproperty, setproperty!
+import SparseArrays: nnz, SparseMatrixCSC
+import Base: (\), size, getproperty, setproperty!, propertynames, show
 import ..increment, ..increment!, ..decrement, ..decrement!
 import ..LibSuiteSparse:
+    SuiteSparse_long,
     klu_l_common,
+    klu_common,
     klu_l_defaults,
+    klu_defaults,
     klu_l_symbolic,
+    klu_symbolic,
     klu_l_free_symbolic,
+    klu_free_symbolic,
     klu_l_numeric,
+    klu_numeric,
     klu_l_free_numeric,
     klu_zl_free_numeric,
+    klu_free_numeric,
+    klu_z_free_numeric,
     KLU_OK,
     KLU_SINGULAR,
     KLU_OUT_OF_MEMORY,
     KLU_INVALID,
     KLU_TOO_LARGE,
     klu_l_analyze,
+    klu_analyze,
     klu_l_factor,
+    klu_factor,
     klu_zl_factor,
+    klu_z_factor,
     klu_l_solve,
     klu_zl_solve,
+    klu_solve,
+    klu_z_solve,
     klu_l_tsolve,
     klu_zl_tsolve,
+    klu_tsolve,
+    klu_z_tsolve,
     klu_l_extract,
     klu_zl_extract,
+    klu_extract,
+    klu_z_extract,
     klu_l_sort,
     klu_zl_sort,
+    klu_sort,
+    klu_z_sort,
     klu_l_refactor,
     klu_zl_refactor
 using LinearAlgebra
-import LinearAlgebra: Factorization
+import LinearAlgebra: Factorization, issuccess, ldiv!
 const KLUTypes = Union{Float64, ComplexF64}
+const KLUValueTypes = (:Float64, :ComplexF64)
+if sizeof(SuiteSparse_long) == 4
+    const KLUITypes = Int32
+    const KLUIndexTypes = (:Int32)
+else
+    const KLUITypes = Union{Int32, Int64}
+    const KLUIndexTypes = (:Int32, :Int64)
+end
 
 function kluerror(status::Integer)
     if status == KLU_OK
@@ -55,42 +82,73 @@ macro isok(A)
     :(kluerror($(esc(A))))
 end
 
-function _common()
-    common = klu_l_common()
-    ok = klu_l_defaults(Ref(common))
+function _klu_name(name, Tv, Ti)
+    outname = "klu_" * (Tv === :Float64 ? "" : "z") * (Ti === :Int64 ? "l_" : "_") * name
+    return Symbol(replace(outname, "__"=>"_"))
+end
+function _common(T)
+    if T == Int64
+        common = klu_l_common()
+        ok = klu_l_defaults(Ref(common))
+    elseif T == Int32
+        common = klu_common()
+        ok = klu_defaults(Ref(common))
+    else
+        throw(ArgumentError("T must be Int64 or Int32"))
+    end
     if ok == 1
         return common
     else
-        throw(ErrorException("Could not initialize klu_common struct."))
+        throw(ErrorException("Could not initialize common struct."))
     end
-    print(common)
 end
 
-mutable struct KLUFactorization{T<:KLUTypes} <: Factorization{T}
-    common::klu_l_common
-    symbolic::Ptr{klu_l_symbolic}
-    numeric::Ptr{klu_l_numeric}
+
+mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: Factorization{Tv}
+    common::Union{klu_l_common, klu_common}
+    _symbolic::Ptr{Cvoid}
+    _numeric::Ptr{Cvoid}
     n::Int
-    colptr::Vector{Int64}
-    rowval::Vector{Int64}
-    nzval::Vector{T}
-    function KLUFactorization(n, colptr, rowval, nzval, common = _common())
-        T = eltype(nzval)
-        obj = new{T}(common, C_NULL, C_NULL, n, colptr, rowval, nzval)
+    colptr::Vector{Ti}
+    rowval::Vector{Ti}
+    nzval::Vector{Tv}
+    function KLUFactorization(n, colptr, rowval, nzval)
+        Ti = eltype(colptr)
+        Tv = eltype(nzval)
+        common = _common(Ti)
+        obj = new{Tv, Ti}(common, C_NULL, C_NULL, n, colptr, rowval, nzval)
         # This finalizer may fail if common is C_NULL.
         function f(klu)
-            klu_l_free_symbolic(Ref(klu.symbolic), Ref(klu.common))
-            if T <: AbstractFloat
-            klu_l_free_numeric(Ref(klu.numeric), Ref(klu.common))
-            elseif T <: Complex
-                klu_zl_free_numeric(Ref(klu.numeric), Ref(klu.common))
-            end
+            _free_symbolic(klu)
+            _free_numeric(klu)
         end
         return finalizer(f, obj)
     end
 end
 
-function KLUFactorization(A::SparseMatrixCSC{T, Int64}) where {T<:KLUTypes}
+function _free_symbolic(K::KLUFactorization{Tv, Ti}) where {Ti<:KLUITypes, Tv}
+    if Ti == Int64
+        klu_l_free_symbolic(Ref(Ptr{klu_l_symbolic}(K._symbolic)), Ref(K.common))
+    elseif Ti == Int32
+        klu_free_symbolic(Ref(Ptr{klu_symbolic}(K._symbolic)), Ref(K.common))
+    end
+    K._symbolic = C_NULL
+end
+
+for Ti ∈ KLUIndexTypes, Tv ∈ KLUValueTypes
+    klufree = _klu_name("free_numeric", Tv, Ti)
+    ptr = _klu_name("numeric", :Float64, Ti)
+    @eval begin
+        function _free_numeric(K::KLUFactorization{$Tv, $Ti})
+            $klufree(Ref(Ptr{$ptr}(K._numeric)), Ref(K.common))
+            K._numeric = C_NULL
+        end
+    end
+end
+
+
+
+function KLUFactorization(A::SparseMatrixCSC{Tv, Ti}) where {Tv<:KLUTypes, Ti<:KLUITypes}
     n = size(A, 1)
     n == size(A, 2) || throw(ArgumentError("KLU only accepts square matrices."))
     return KLUFactorization(n, decrement(A.colptr), decrement(A.rowval), A.nzval)
@@ -107,69 +165,75 @@ function size(K::KLUFactorization, dim::Integer)
     end
 end
 
-Base.adjoint(F::KLUFactorization) = Adjoint(F)
-Base.transpose(F::KLUFactorization) = Transpose(F)
+nnz(K::KLUFactorization) = K.lnz + K.unz + K.nzoff
 
-function setproperty!(klu::KLUFactorization, ::Val{:symbolic}, x)
-    current = getfield(klu, :symbolic)
-    if current != C_NULL
-        klu_l_free_symbolic(Ref(current), Ref(getfield(klu, :common)))
-    end
-    setfield!(klu, :symbolic, x)
+Base.adjoint(K::KLUFactorization) = Adjoint(K)
+Base.transpose(K::KLUFactorization) = Transpose(K)
+
+function setproperty!(klu::KLUFactorization, ::Val{:(_symbolic)}, x)
+    _free_symbolic(klu)
+    setfield!(klu, :(_symbolic), x)
 end
 
-function setproperty!(klu::KLUFactorization{T}, ::Val{:numeric}, x) where {T}
-    current = getfield(klu, :numeric)
-    if T == Float64
-        klu_l_free_numeric(Ref(current), Ref(getfield(klu, :common)))
-    else
-        klu_zl_free_numeric(Ref(current), Ref(getfield(klu, :common)))
-    end
-    setfield!(klu, :numeric, x)
+function setproperty!(klu::KLUFactorization, ::Val{:(_numeric)}, x)
+    _free_numeric(klu)
+    setfield!(klu, :(_numeric), x)
 end
 
 # Certain sets of inputs must be non-null *together*:
 # [Lp, Li, Lx], [Up, Ui, Ux], [Fp, Fi, Fx]
-function _extract!(
-    klu::KLUFactorization{T};
-    Lp = C_NULL, Li = C_NULL, Up = C_NULL, Ui = C_NULL, Fp = C_NULL, Fi = C_NULL,
-    P = C_NULL, Q = C_NULL, R = C_NULL, Lx = C_NULL, Lz = C_NULL, Ux = C_NULL, Uz = C_NULL,
-    Fx = C_NULL, Fz = C_NULL, Rs = C_NULL
-    ) where {T<:KLUTypes}
-    if T == Float64
-        klu_l_sort(klu.symbolic, klu.numeric, Ref(klu.common))
-        ok = klu_l_extract(
-            klu.numeric, klu.symbolic,
-            Lp, Li, Lx, Up, Ui, Ux, Fp, Fi, Fx, P, Q, Rs, R,
-            Ref(klu.common)
-            )
-    elseif T == ComplexF64
-        klu_zl_sort(klu.symbolic, klu.numeric, Ref(klu.common))
-        ok = klu_zl_extract(
-            klu.numeric, klu.symbolic,
-            Lp, Li, Lx, Lz, Up, Ui, Ux, Uz, Fp, Fi, Fx, Fz, P, Q, Rs, R,
-            Ref(klu.common)
-        )
-    end
-    if ok == 1
-        return nothing
+for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
+    extract = _klu_name("extract", Tv, Ti)
+    sort = _klu_name("sort", Tv, Ti)
+    if Tv === :ComplexF64
+        call = :($extract(klu._numeric, klu._symbolic, Lp, Li, Lx, Lz, Up, Ui, Ux, Uz, Fp, Fi, Fx, Fz, P, Q, Rs, R, Ref(klu.common)))
     else
-        kluerror(klu.common)
+        call = :($extract(klu._numeric, klu._symbolic, Lp, Li, Lx, Up, Ui, Ux, Fp, Fi, Fx, P, Q, Rs, R, Ref(klu.common)))
     end
-    return nothing
+    @eval begin
+        function _extract!(
+            klu::KLUFactorization{$Tv, $Ti};
+            Lp = C_NULL, Li = C_NULL, Up = C_NULL, Ui = C_NULL, Fp = C_NULL, Fi = C_NULL,
+            P = C_NULL, Q = C_NULL, R = C_NULL, Lx = C_NULL, Lz = C_NULL, Ux = C_NULL, Uz = C_NULL,
+            Fx = C_NULL, Fz = C_NULL, Rs = C_NULL
+        )
+            $sort(klu._symbolic, klu._numeric, Ref(klu.common))
+            ok = $call
+            if ok == 1
+                return nothing
+            else
+                kluerror(klu.common)
+            end
+            return nothing
+        end
+    end
 end
 
-function getproperty(klu::KLUFactorization{T}, s::Symbol) where {T<:KLUTypes}
+function getproperty(klu::KLUFactorization{Tv, Ti}, s::Symbol) where {Tv<:KLUTypes, Ti<:KLUITypes}
     # Forwards to the numeric struct:
     if s ∈ [:lnz, :unz, :nzoff]
-        klu.numeric != C_NULL || throw(ArgumentError("This KLUFactorization has no available numeric object."))
-        numeric = unsafe_load(klu.numeric)
-        return getproperty(numeric, s)
+        klu._numeric == C_NULL && throw(ArgumentError("This KLUFactorization has not yet been factored. Try `klu_factor!`."))
+        return getproperty(klu.numeric, s)
     end
     if s ∈ [:nblocks, :maxblock]
-        klu.symbolic != C_NULL || throw(ArgumentError("This KLUFactorization has no available symbolic object."))
-        symbolic = unsafe_load(klu.symbolic)
-        return getproperty(symbolic, s)
+        klu._symbolic == C_NULL && throw(ArgumentError("This KLUFactorization has not yet been analyzed. Try `klu_analyze!`."))
+        return getproperty(klu.symbolic, s)
+    end
+    if s === :symbolic
+        klu._symbolic == C_NULL && throw(ArgumentError("This KLUFactorization has not yet been analyzed. Try `klu_analyze!`."))
+        if Ti == Int64
+            return unsafe_load(Ptr{klu_l_symbolic}(klu._symbolic))
+        else
+            return unsafe_load(Ptr{klu_symbolic}(klu._symbolic))
+        end
+    end
+    if s === :numeric
+        klu._numeric == C_NULL && throw(ArgumentError("This KLUFactorization has not yet been factored. Try `klu_factor!`."))
+        if Ti == Int64
+            return unsafe_load(Ptr{klu_l_numeric}(klu._numeric))
+        else
+            return unsafe_load(Ptr{klu_numeric}(klu._numeric))
+        end
     end
     # Non-overloaded parts:
     if s ∉ [:L, :U, :F, :P, :Q, :R, :Rs, :(_L), :(_U), :(_F)]
@@ -178,36 +242,64 @@ function getproperty(klu::KLUFactorization{T}, s::Symbol) where {T<:KLUTypes}
     # Factor parts:
     if s === :(_L)
         lnz = klu.lnz
-        Lp = Vector{Int64}(undef, klu.n + 1)
-        Li = Vector{Int64}(undef, lnz)
+        Lp = Vector{Ti}(undef, klu.n + 1)
+        Li = Vector{Ti}(undef, lnz)
         Lx = Vector{Float64}(undef, lnz)
-        Lz = T == Float64 ? C_NULL : Vector{Float64}(undef, lnz)
+        Lz = Tv == Float64 ? C_NULL : Vector{Float64}(undef, lnz)
         _extract!(klu; Lp, Li, Lx, Lz)
         return Lp, Li, Lx, Lz
     elseif s === :(_U)
         unz = klu.unz
-        Up = Vector{Int64}(undef, klu.n + 1)
-        Ui = Vector{Int64}(undef, unz)
+        Up = Vector{Ti}(undef, klu.n + 1)
+        Ui = Vector{Ti}(undef, unz)
         Ux = Vector{Float64}(undef, unz)
-        Uz = T == Float64 ? C_NULL : Vector{Float64}(undef, unz)
+        Uz = Tv == Float64 ? C_NULL : Vector{Float64}(undef, unz)
         _extract!(klu; Up, Ui, Ux, Uz)
         return Up, Ui, Ux, Uz
     elseif s === :(_F)
         fnz = klu.nzoff
-        Fp = Vector{Int64}(undef, klu.n + 1)
-        Fi = Vector{Int64}(undef, fnz)
-        Fx = Vector{Float64}(undef, fnz)
-        Fz = T == Float64 ? C_NULL : Vector{Float64}(undef, fnz)
-        _extract!(klu; Fp, Fi, Fx, Fz)
+        # We often don't have an F, so create the right vectors for an empty SparseMatrixCSC
+        if fnz == 0
+            Fp = zeros(Int64, klu.n + 1)
+            Fi = Vector{Ti}()
+            Fx = Vector{Float64}()
+            Fz = Tv == Float64 ? C_NULL : Vector{Float64}()
+        else
+            Fp = Vector{Ti}(undef, klu.n + 1)
+            Fi = Vector{Ti}(undef, fnz)
+            Fx = Vector{Float64}(undef, fnz)
+            Fz = Tv == Float64 ? C_NULL : Vector{Float64}(undef, fnz)
+            _extract!(klu; Fp, Fi, Fx, Fz)
+            # F is *not* sorted on output, so we'll have to do it here:
+            for i ∈ 1:length(Fp) - 1
+                Fp[end] -= 1 # deal with last index being last + 1
+                # find each segment
+                first = Fp[i] + 1
+                last = Fp[i+1] + 1
+                # sort each column of rowval, nzval, and Fz for complex numbers if necessary
+                #by the ascending permutation of rowval.
+                Fiview = view(Fi, first:last)
+                Fxview = view(Fx, first:last)
+                P = sortperm(Fiview)
+                Fiview .= Fiview[P]
+                Fxview .= Fxview[P]
+                if length(Fz) == length(Fx)
+                    Fzview = view(Fz, first:last)
+                    Fzview .= Fzview[P]
+                end
+                # reset the last entry
+                Fp[end] += 1
+            end
+        end
         return Fp, Fi, Fx, Fz
     end
     if s ∈ [:Q, :P, :R, :Rs]
         if s === :Rs
             out = Vector{Float64}(undef, klu.n)
         elseif s === :R
-            out = Vector{Int64}(undef, klu.nblocks + 1)
+            out = Vector{Ti}(undef, klu.nblocks + 1)
         else
-            out = Vector{Int64}(undef, klu.n)
+            out = Vector{Ti}(undef, klu.n)
         end
         # This tuple construction feels hacky, there's a better way I'm sure.
         _extract!(klu; NamedTuple{(s,)}((out,))...)
@@ -224,7 +316,7 @@ function getproperty(klu::KLUFactorization{T}, s::Symbol) where {T<:KLUTypes}
         elseif s === :F
             p, i, x, z = klu._F
         end
-        if T == Float64
+        if Tv == Float64
             return SparseMatrixCSC(klu.n, klu.n, increment!(p), increment!(i), x)
         else
             return SparseMatrixCSC(klu.n, klu.n, increment!(p), increment!(i), Complex.(x, z))
@@ -232,36 +324,58 @@ function getproperty(klu::KLUFactorization{T}, s::Symbol) where {T<:KLUTypes}
     end
 end
 
-function klu_analyze!(K::KLUFactorization)
-    if K.symbolic != C_NULL return K end
-    sym = klu_l_analyze(K.n, K.colptr, K.rowval, Ref(K.common))
-    println(sym)
+function LinearAlgebra.issuccess(K::KLUFactorization)
+    return K.common.status == KLU_OK && K._numeric != C_NULL
+end
+function show(io::IO, mime::MIME{Symbol("text/plain")}, K::KLUFactorization)
+    if issuccess(K)
+        summary(io, K); println(io)
+        println(io, "L factor:")
+        show(io, mime, K.L)
+        println(io, "\nU factor:")
+        show(io, mime, K.U)
+        F = K.F
+        if F !== nothing
+            println(io, "\nF factor:")
+            show(io, mime, K.F)
+        end
+    else
+        print(io, "Failed factorization of type $(typeof(K)). Try `klu_factor!(K)`.")
+    end
+end
+
+function klu_analyze!(K::KLUFactorization{Tv, Ti}) where {Tv, Ti<:KLUITypes}
+    if K._symbolic != C_NULL return K end
+    if Ti == Int64
+        sym = klu_l_analyze(K.n, K.colptr, K.rowval, Ref(K.common))
+    else
+        sym = klu_analyze(K.n, K.colptr, K.rowval, Ref(K.common))
+    end
     if sym == C_NULL
         kluerror(K.common)
     else
-        K.symbolic = sym
+        K._symbolic = sym
     end
     return K
 end
 
-function klu_factor!(K::KLUFactorization{T}) where {T}
-    K.symbolic == C_NULL  && klu_analyze!(K)
-    if T == Float64
-        num = klu_l_factor(K.colptr, K.rowval, K.nzval, K.symbolic, Ref(K.common))
-    elseif T == ComplexF64
-        num = klu_zl_factor(K.colptr, K.rowval, K.nzval, K.symbolic, Ref(K.common))
-    else
-        throw(ArgumentError("$T is not a supported eltype."))
+for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
+    factor = _klu_name("factor", Tv, Ti)
+    @eval begin
+        function klu_factor!(K::KLUFactorization{$Tv, $Ti})
+            K._symbolic == C_NULL  && klu_analyze!(K)
+            num = $factor(K.colptr, K.rowval, K.nzval, K._symbolic, Ref(K.common))
+            if num == C_NULL
+                kluerror(K.common)
+            else
+                K._numeric = num
+            end
+            return K
+        end
     end
-    if num == C_NULL
-        kluerror(K.common)
-    else
-        K.numeric = num
-    end
-    return K
 end
 
-function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}; common = _common()) where {T<:AbstractFloat}
+function klu(n, colptr::Vector{Ti}, rowval::Vector{Ti}, nzval::Vector{Tv}) where {Ti<:KLUITypes, Tv<:AbstractFloat}
     if nzval != Float64
         nzval = convert(Vector{Float64}, nzval)
     end
@@ -269,7 +383,7 @@ function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}; 
     return klu_factor!(K)
 end
 
-function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}; common = _common()) where {T<:Complex}
+function klu(n, colptr::Vector{Ti}, rowval::Vector{Ti}, nzval::Vector{Tv}) where {Ti<:KLUITypes, Tv<:Complex}
     if nzval != ComplexF64
         nzval = convert(Vector{ComplexF64}, nzval)
     end
@@ -277,77 +391,105 @@ function klu(n, colptr::Vector{Int64}, rowval::Vector{Int64}, nzval::Vector{T}; 
     return klu_factor!(K)
 end
 
-function klu(A::SparseMatrixCSC{T, Int64}; common = _common()) where {T<:Union{AbstractFloat, Complex}}
+function klu(A::SparseMatrixCSC{Tv, Ti}) where {Tv<:Union{AbstractFloat, Complex}, Ti<:KLUITypes}
     n = size(A, 1)
     n == size(A, 2) || throw(DimensionMismatch())
     return klu(n, decrement(A.colptr), decrement(A.rowval), A.nzval)
 end
 
-function klu!(K::KLUFactorization{T}, nzval::Vector{T}) where {T}
-    length(nzval) != length(K.nzval)  && throw(DimensionMismatch())
-    K.nzval = nzval
-    if T == Float64
-        ok = klu_l_refactor(K.colptr, K.rowval, K.nzval, K.symbolic, K.numeric, Ref(K.common))
-    else
-        ok = klu_zl_refactor(K.colptr, K.rowval, K.nzval, K.symbolic, K.numeric, Ref(K.common))
-    end
-    if ok == 0
-        return K
-    else
-        kluerror(K.common)
+for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
+    refactor = _klu_name("refactor", Tv, Ti)
+    @eval begin
+        function klu!(K::KLUFactorization{$Tv, $Ti}, nzval::Vector{$Tv})
+            length(nzval) != length(K.nzval)  && throw(DimensionMismatch())
+            K.nzval = nzval
+            ok = $refactor(K.colptr, K.rowval, K.nzval, K._symbolic, K._numeric, Ref(K.common))
+            if ok == 1
+                return K
+            else
+                kluerror(K.common)
+            end
+        end
     end
 end
 
-function klu!(K::KLUFactorization{ComplexF64}, nzval::Vector{U}) where {U<:Union{ComplexF16, ComplexF32}}
+function klu!(K::KLUFactorization{ComplexF64}, nzval::Vector{U}) where {U<:Complex}
     return klu!(K, convert(Vector{ComplexF64}, nzval))
 end
 
-function klu!(K::KLUFactorization{Float64}, nzval::Vector{U}) where {U<:Union{Float16, Float32}}
+function klu!(K::KLUFactorization{Float64}, nzval::Vector{U}) where {U<:AbstractFloat}
     return klu!(K, convert(Vector{Float64}, nzval))
 end
 
 #B is the modified argument here. To match with the math it should be (num, B). But convention is
 # modified first. Thoughts?
-function solve!(klu::KLUFactorization{T}, B::StridedVecOrMat{T}) where {T<:KLUTypes}
-    stride(B, 1) == 1 || throw(ArgumentError("B must have unit strides"))
-    klu.numeric == C_NULL && klu_factor!(klu)
-    size(B, 1) == size(klu, 1) || throw(DimensionMismatch())
-    T == Float64 ? (f = klu_l_solve) : (f = klu_zl_solve)
-    isok = f(klu.symbolic, klu.numeric, size(B, 1), size(B, 2), B, Ref(klu.common))
-    isok == 0 && kluerror(klu.common)
-    return B
+for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
+    solve = _klu_name("solve", Tv, Ti)
+    @eval begin
+        function solve!(klu::KLUFactorization{$Tv, $Ti}, B::StridedVecOrMat{$Tv})
+            stride(B, 1) == 1 || throw(ArgumentError("B must have unit strides"))
+            klu._numeric == C_NULL && klu_factor!(klu)
+            size(B, 1) == size(klu, 1) || throw(DimensionMismatch())
+            isok = $solve(klu._symbolic, klu._numeric, size(B, 1), size(B, 2), B, Ref(klu.common))
+            isok == 0 && kluerror(klu.common)
+            return B
+        end
+    end
 end
 
-function solve!(klu::LinearAlgebra.AdjOrTrans{T, KLUFactorization{T}}, B::StridedVecOrMat{T}) where {T}
-    if klu isa Adjoint
-        conj = 1
-    elseif klu isa Transpose
-        conj = 0
-    end
-    klu = parent(klu)
-    stride(B, 1) == 1 || throw(ArgumentError("B must have unit strides"))
-    klu.numeric == C_NULL && klu_factor!(klu)
-    size(B, 1) == size(klu, 1) || throw(DimensionMismatch())
-    if T == Float64
-        # Float solve doesn't take a conjugate argument
-        isok = klu_l_tsolve(klu.symbolic, klu.numeric, size(B, 1), size(B, 2), B, Ref(klu.common))
+for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
+    tsolve = _klu_name("tsolve", Tv, Ti)
+    if Tv === :ComplexF64
+        call = :($tsolve(klu._symbolic, klu._numeric, size(B, 1), size(B, 2), B, conj, Ref(klu.common)))
     else
-        # conj determines whether to use conjugate transpose (1) or transpose (0).
-        isok = klu_zl_tsolve(klu.symbolic, klu.numeric, size(B, 1), size(B, 2), B, conj, Ref(klu.common))
+        call = :($tsolve(klu._symbolic, klu._numeric, size(B, 1), size(B, 2), B, Ref(klu.common)))
     end
-    isok == 0 && kluerror(klu.common)
-    return B
+    @eval begin
+        function solve!(klu::LinearAlgebra.Adjoint{$Tv, KLUFactorization{$Tv, $Ti}}, B::StridedVecOrMat{$Tv})
+            conj = 1
+            klu = parent(klu)
+            stride(B, 1) == 1 || throw(ArgumentError("B must have unit strides"))
+            klu._numeric == C_NULL && klu_factor!(klu)
+            size(B, 1) == size(klu, 1) || throw(DimensionMismatch())
+            isok = $call
+            isok == 0 && kluerror(klu.common)
+            return B
+        end
+        function solve!(klu::LinearAlgebra.Transpose{$Tv, KLUFactorization{$Tv, $Ti}}, B::StridedVecOrMat{$Tv})
+            conj = 0
+            klu = parent(klu)
+            stride(B, 1) == 1 || throw(ArgumentError("B must have unit strides"))
+            klu._numeric == C_NULL && klu_factor!(klu)
+            size(B, 1) == size(klu, 1) || throw(DimensionMismatch())
+            isok = $call
+            isok == 0 && kluerror(klu.common)
+            return B
+        end
+    end
 end
-
 
 function solve(klu, B)
     X = copy(B)
     return solve!(klu, X)
 end
+ldiv!(klu::KLUFactorization{Tv}, B::StridedVecOrMat{Tv}) where {Tv<:KLUTypes} =
+    solve!(klu, B)
+ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat{Tv}) where {Tv, Ti} =
+    solve!(klu, B)
+function ldiv!(klu::KLUFactorization{<:AbstractFloat}, B::StridedVecOrMat{<:Complex})
+    imagX = solve(klu, imag(B))
+    realX = solve(klu, real(B))
+    map!(complex, B, realX, imagX)
+end
 
-\(klu::KLUFactorization, B::StridedVecOrMat) = solve(klu, B)
-\(klu::LinearAlgebra.AdjOrTrans{T, KLUFactorization{T}}, B::StridedVecOrMat) where {T} =
-    solve(klu, B)
+function ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat{<:Complex}) where {Tv<:AbstractFloat, Ti}
+    imagX = solve(klu, imag(B))
+    realX = solve(klu, real(B))
+    map!(complex, B, realX, imagX)
+end
 
+#\(klu::KLUFactorization, B::StridedVecOrMat) = solve(klu, B)
+#\(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat) where {Tv, Ti} =
+#    solve(klu, B)
 
 end
