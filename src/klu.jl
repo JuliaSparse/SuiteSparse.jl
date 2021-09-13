@@ -54,7 +54,7 @@ const KLUTypes = Union{Float64, ComplexF64}
 const KLUValueTypes = (:Float64, :ComplexF64)
 if sizeof(SuiteSparse_long) == 4
     const KLUITypes = Int32
-    const KLUIndexTypes = (:Int32)
+    const KLUIndexTypes = (:Int32,)
 else
     const KLUITypes = Union{Int32, Int64}
     const KLUIndexTypes = (:Int32, :Int64)
