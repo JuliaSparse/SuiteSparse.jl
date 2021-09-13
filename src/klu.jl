@@ -1,6 +1,9 @@
 module KLU
 
-import SparseArrays: nnz, SparseMatrixCSC
+using SparseArrays
+using SparseArrays: SparseMatrixCSC
+import SparseArrays: nnz
+
 import Base: (\), size, getproperty, setproperty!, propertynames, show
 import ..increment, ..increment!, ..decrement, ..decrement!
 import ..LibSuiteSparse:
@@ -103,7 +106,15 @@ function _common(T)
     end
 end
 
+"""
+    KLUFactorization <: Factorization
 
+Matrix factorization type of the KLU factorization of a sparse matrix `A`.
+This is the return type of `klu`, the corresponding matrix factorization function.
+
+The factors can be obtained from `K::KLUFactorization` via `K.L`, `K.U` and `K.F`
+See the `klu` docs for more information.
+"""
 mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: Factorization{Tv}
     common::Union{klu_l_common, klu_common}
     _symbolic::Ptr{Cvoid}
@@ -117,7 +128,6 @@ mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: Factorization{Tv
         Tv = eltype(nzval)
         common = _common(Ti)
         obj = new{Tv, Ti}(common, C_NULL, C_NULL, n, colptr, rowval, nzval)
-        # This finalizer may fail if common is C_NULL.
         function f(klu)
             _free_symbolic(klu)
             _free_numeric(klu)
@@ -236,7 +246,7 @@ function getproperty(klu::KLUFactorization{Tv, Ti}, s::Symbol) where {Tv<:KLUTyp
         end
     end
     # Non-overloaded parts:
-    if s ∉ [:L, :U, :F, :P, :Q, :R, :Rs, :(_L), :(_U), :(_F)]
+    if s ∉ [:L, :U, :F, :p, :q, :R, :Rs, :(_L), :(_U), :(_F)]
         return getfield(klu, s)
     end
     # Factor parts:
@@ -293,7 +303,7 @@ function getproperty(klu::KLUFactorization{Tv, Ti}, s::Symbol) where {Tv<:KLUTyp
         end
         return Fp, Fi, Fx, Fz
     end
-    if s ∈ [:Q, :P, :R, :Rs]
+    if s ∈ [:q, :p, :R, :Rs]
         if s === :Rs
             out = Vector{Float64}(undef, klu.n)
         elseif s === :R
@@ -302,8 +312,10 @@ function getproperty(klu::KLUFactorization{Tv, Ti}, s::Symbol) where {Tv<:KLUTyp
             out = Vector{Ti}(undef, klu.n)
         end
         # This tuple construction feels hacky, there's a better way I'm sure.
+        s === :q && (s = :Q)
+        s === :p && (s = :P)
         _extract!(klu; NamedTuple{(s,)}((out,))...)
-        if s ∈ [:Q, :P, :R]
+        if s ∈ [:q, :p, :R]
             increment!(out)
         end
         return out
@@ -375,6 +387,54 @@ for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
     end
 end
 
+"""
+klu_factor!(K::KLUFactorization)
+
+Factor `K` into components `K.L`, `K.U`, and `K.F`.
+This function will perform both the symbolic and numeric steps of factoriation on an
+    existing `KLUFactorization` instance.
+
+    The `K.common` struct can be used to modify certain options and parameters such as:
+
+"""
+klu_factor!
+
+"""
+    klu(A::SparseMatrixCSC) -> K::KLUFactorization
+    klu(n, colptr::Vector{Ti}, rowval::Vector{Ti}, nzval::Vector{Tv}) -> K::KLUFactorization
+
+Compute the LU factorization of a sparse matrix `A` using KLU.
+
+For sparse `A` with real or complex element type, the return type of `K` is
+`KLUFactorization{Tv, Ti}`, with `Tv` = [`Float64`](@ref) or [`ComplexF64`](@ref)
+respectively and `Ti` is an integer type ([`Int32`](@ref) or [`Int64`](@ref)).
+
+
+The individual components of the factorization `K` can be accessed by indexing:
+
+| Component | Description                                                      |
+|:----------|:-----------------------------------------------------------------|
+| `L`       | `L` (lower triangular) part of `LU` of the diagonal blocks       |
+| `U`       | `U` (upper triangular) part of `LU` of the diagonal blocks       |
+| `F`       | `F` (upper triangular) part of `LU + F`, the off-diagonal blocks |
+| `p`       | right permutation `Vector`                                       |
+| `q`       | left permutation `Vector`                                        |
+| `Rs`      | `Vector` of scaling factors                                      |
+
+The relation between `K` and `A` is
+
+`K.L * K.U + K.F  == K.Rs [`\\`]`(@ref) A[K.p, K.q]`
+
+`K` further supports the following functions:
+
+- [`\\`](@ref)
+
+!!! note
+    `klu(A::SparseMatrixCSC)` uses the KLU library that is part of
+    SuiteSparse. As this library only supports sparse matrices with [`Float64`](@ref) or
+    `ComplexF64` elements, `lu` converts `A` into a copy that is of type
+    `SparseMatrixCSC{Float64}` or `SparseMatrixCSC{ComplexF64}` as appropriate.
+"""
 function klu(n, colptr::Vector{Ti}, rowval::Vector{Ti}, nzval::Vector{Tv}) where {Ti<:KLUITypes, Tv<:AbstractFloat}
     if nzval != Float64
         nzval = convert(Vector{Float64}, nzval)
@@ -421,7 +481,7 @@ function klu!(K::KLUFactorization{Float64}, nzval::Vector{U}) where {U<:Abstract
     return klu!(K, convert(Vector{Float64}, nzval))
 end
 
-#B is the modified argument here. To match with the math it should be (num, B). But convention is
+#B is the modified argument here. To match with the math it should be (klu, B). But convention is
 # modified first. Thoughts?
 for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
     solve = _klu_name("solve", Tv, Ti)
