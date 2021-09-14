@@ -395,6 +395,22 @@ function klu_analyze!(K::KLUFactorization{Tv, Ti}) where {Tv, Ti<:KLUITypes}
     return K
 end
 
+# User provided permutation vectors:
+function klu_analyze!(K::KLUFactorization{Tv, Ti}, P::Vector{Ti}, Q::Vector{Ti}) where {Tv, Ti<:KLUITypes}
+    if K._symbolic != C_NULL return K end
+    if Ti == Int64
+        sym = klu_l_analyze_given(K.n, K.colptr, K.rowval, P, Q, Ref(K.common))
+    else
+        sym = klu_analyze_given(K.n, K.colptr, K.rowval, P, Q, Ref(K.common))
+    end
+    if sym == C_NULL
+        kluerror(K.common)
+    else
+        K._symbolic = sym
+    end
+    return K
+end
+
 for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
     factor = _klu_name("factor", Tv, Ti)
     @eval begin
