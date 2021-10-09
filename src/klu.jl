@@ -247,13 +247,13 @@ for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
     end
 end
 
-function Base.propertynames(klu::KLUFactorization, private=false)
-    public = (:lnz, :unz, :nzoff, :L, :U, :F, :q, :p, :Rs, :symbolic, :numeric,)
-    private = (:nblocks, :maxblock,  :(_L), :(_U), :(_F))
+function Base.propertynames(::KLUFactorization, private::Bool=false)
+    publicnames = (:lnz, :unz, :nzoff, :L, :U, :F, :q, :p, :Rs, :symbolic, :numeric,)
+    privatenames = (:nblocks, :maxblock,  :(_L), :(_U), :(_F))
     if private
-        return (public..., private...)
+        return (publicnames..., privatenames...)
     else
-        return public
+        return publicnames
     end
 end
 
