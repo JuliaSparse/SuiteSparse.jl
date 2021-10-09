@@ -54,7 +54,15 @@ using LinearAlgebra
             @test transpose(A) * x ≈ b
 
             @inferred klua\fill(1, size(A, 2))
-
+            @testset "Permutation vectors" begin
+                #Just to test this works, we'll use the existing permutation vectors.
+                P = klua.p
+                Q = klua.q
+                klu_analyze!(klua, P, Q)
+                klu_factor!(klua)
+                x = klua \ b
+                @test A*x ≈ b
+            end
             @testset "Utility functions" begin
                 K = KLUFactorization(A);
                 @test size(K) == (5, 5)
@@ -65,6 +73,8 @@ using LinearAlgebra
                 @test K.symbolic.nzoff == 4
                 klu_factor!(K)
                 @test K.numeric.lnz == 7 == K.numeric.unz
+                @test K.nblocks == 3
+                @test propertynames(K) == (:lnz, :unz, :nzoff, :L, :U, :F, :q, :p, :Rs, :symbolic, :numeric,)
             end
             @testset "Refactorization" begin
                 B = convert(SparseMatrixCSC{Tv, Ti}, A1)
@@ -72,7 +82,10 @@ using LinearAlgebra
                 F = klu(A)
                 klu!(F, B)
                 @test F\b ≈ B\b ≈ Matrix(B)\b
+                klu!(F, B.nzval) #test the vector form
+                @test F\b ≈ B\b ≈ Matrix(B)\b
             end
+            
             @testset "Singular matrix" begin
                 S = sparse([1 2; 0 0])
                 S = convert(SparseMatrixCSC{Tv, Ti}, S)
