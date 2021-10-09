@@ -49,6 +49,8 @@ import ..LibSuiteSparse:
     klu_zl_sort,
     klu_sort,
     klu_z_sort,
+    klu_refactor,
+    klu_z_refactor,
     klu_l_refactor,
     klu_zl_refactor
 using LinearAlgebra
@@ -376,7 +378,7 @@ function show(io::IO, mime::MIME{Symbol("text/plain")}, K::KLUFactorization)
             show(io, mime, K.F)
         end
     else
-        print(io, "Failed factorization of type $(typeof(K)). Try `klu_factor!(K)`.")
+        throw(ArgumentError("Failed factorization of type $(typeof(K)). Try `klu_factor!(K)`."))
     end
 end
 
@@ -522,6 +524,10 @@ function klu!(K::KLUFactorization{Float64}, nzval::Vector{U}) where {U<:Abstract
     return klu!(K, convert(Vector{Float64}, nzval))
 end
 
+function klu!(K::KLUFactorization{U}, S::SparseMatrixCSC{U}) where {U}
+    size(K) == size(S) || throw(ArgumentError("Sizes of K and S must match."))
+    return klu!(K, S.nzval)
+end
 #B is the modified argument here. To match with the math it should be (klu, B). But convention is
 # modified first. Thoughts?
 for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
@@ -588,9 +594,5 @@ function ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::S
     realX = solve(klu, real(B))
     map!(complex, B, realX, imagX)
 end
-
-#\(klu::KLUFactorization, B::StridedVecOrMat) = solve(klu, B)
-#\(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat) where {Tv, Ti} =
-#    solve(klu, B)
 
 end
