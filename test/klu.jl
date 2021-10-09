@@ -17,7 +17,6 @@ using LinearAlgebra
             klua = klu(size(A, 1), decrement(A.colptr), decrement(A.rowval), A.nzval)
             @test klua.F == klu(A).F
             @test nnz(klua) == 18
-            # This fails with one value wrong. No idea why
             R = Diagonal(Tv == ComplexF64 ? complex.(klua.Rs) : klua.Rs)
             @test R \ A[klua.p, klua.q] ≈ (klua.L * klua.U + klua.F)
 
@@ -56,9 +55,7 @@ using LinearAlgebra
             @inferred klua\fill(1, size(A, 2))
             @testset "Permutation vectors" begin
                 #Just to test this works, we'll use the existing permutation vectors.
-                P = klua.p
-                Q = klua.q
-                @test klu_analyze!(klua, P, Q).common.status == 0
+                @test klu_analyze!(klua, klua.p, klua.q).common.status == 0
                 klu_factor!(klua)
                 x = klua \ b
                 @test A*x ≈ b
@@ -84,7 +81,7 @@ using LinearAlgebra
                 F = klu(A)
                 klu!(F, B)
                 @test F\b ≈ B\b ≈ Matrix(B)\b
-                @test klu!(F, B.nzval)\b ≈ B\b ≈ Matrix(B)\b #test just supply nzval for recompute
+                @test klu!(F, B.nzval)\b ≈ B\b ≈ Matrix(B)\b #test just supplying nzval for recompute
             end
             
             @testset "Singular matrix" begin
@@ -94,14 +91,13 @@ using LinearAlgebra
             end
         end
     end
-end
-
-@testset "REPL printing of KLU" begin
-    A = sparse([1, 2], [1, 2], Float64[1.0, 1.0])
-    F = klu(A)
-    facstring = sprint((t, s) -> show(t, "text/plain", s), F)
-    lstring = sprint((t, s) -> show(t, "text/plain", s), F.L)
-    ustring = sprint((t, s) -> show(t, "text/plain", s), F.U)
-    fstring = sprint((t, s) -> show(t, "text/plain", s), F.F)
-    @test facstring == "$(summary(F))\nL factor:\n$lstring\nU factor:\n$ustring\nF factor:\n$fstring"
+    @testset "REPL printing of KLU" begin
+        A = sparse([1, 2], [1, 2], Float64[1.0, 1.0])
+        F = klu(A)
+        facstring = sprint((t, s) -> show(t, "text/plain", s), F)
+        lstring = sprint((t, s) -> show(t, "text/plain", s), F.L)
+        ustring = sprint((t, s) -> show(t, "text/plain", s), F.U)
+        fstring = sprint((t, s) -> show(t, "text/plain", s), F.F)
+        @test facstring == "$(summary(F))\nL factor:\n$lstring\nU factor:\n$ustring\nF factor:\n$fstring"
+    end
 end
