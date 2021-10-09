@@ -136,12 +136,10 @@ end
     KLUFactorization <: Factorization
 
 Matrix factorization type of the KLU factorization of a sparse matrix `A`.
-This is the return type of [`klu`](@ref), the corresponding matrix factorization function.
+This is the return type of `klu`, the corresponding matrix factorization function.
 
 The factors can be obtained from `K::KLUFactorization` via `K.L`, `K.U` and `K.F`
-See the [`klu`](@ref) docs for more information.
-
-You typically should not construct this directly, instead use [`klu`](@ref).
+See the `klu` docs for more information.
 """
 mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: Factorization{Tv}
     common::Union{klu_l_common, klu_common}
@@ -244,16 +242,6 @@ for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
             end
             return nothing
         end
-    end
-end
-
-function Base.propertynames(klu::KLUFactorization, private=false)
-    public = (:lnz, :unz, :nzoff, :L, :U, :F, :q, :p, :Rs, :symbolic, :numeric,)
-    private = (:nblocks, :maxblock,  :(_L), :(_U), :(_F))
-    if private
-        return (public..., private...)
-    else
-        return public
     end
 end
 

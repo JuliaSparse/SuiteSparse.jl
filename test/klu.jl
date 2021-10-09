@@ -73,12 +73,6 @@ using LinearAlgebra
                 klu!(F, B)
                 @test F\b ≈ B\b ≈ Matrix(B)\b
             end
-            @testset "Singular matrix" begin
-                S = sparse([1 2; 0 0])
-                S = convert(SparseMatrixCSC{Tv, Ti}, S)
-                @test_throws SingularException klu(S)
-
-            end
         end
     end
 end

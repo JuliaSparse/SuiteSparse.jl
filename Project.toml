@@ -1,5 +1,5 @@
 name = "SuiteSparse"
-uuid = "4707b0f0-06f3-5cda-b6b1-a6196a1729e9"
+uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [deps]
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
