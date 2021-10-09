@@ -242,7 +242,6 @@ for Tv ∈ KLUValueTypes, Ti ∈ KLUIndexTypes
             else
                 kluerror(klu.common)
             end
-            return nothing
         end
     end
 end

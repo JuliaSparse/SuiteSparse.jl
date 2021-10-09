@@ -75,6 +75,8 @@ using LinearAlgebra
                 @test K.numeric.lnz == 7 == K.numeric.unz
                 @test K.nblocks == 3
                 @test propertynames(K) == (:lnz, :unz, :nzoff, :L, :U, :F, :q, :p, :Rs, :symbolic, :numeric,)
+                @test_throws ArgumentError size(K, -1)
+                @test size(K, 3) == 1
             end
             @testset "Refactorization" begin
                 B = convert(SparseMatrixCSC{Tv, Ti}, A1)
@@ -82,15 +84,13 @@ using LinearAlgebra
                 F = klu(A)
                 klu!(F, B)
                 @test F\b ≈ B\b ≈ Matrix(B)\b
-                klu!(F, B.nzval) #test the vector form
-                @test F\b ≈ B\b ≈ Matrix(B)\b
+                @test klu!(F, B.nzval)\b ≈ B\b ≈ Matrix(B)\b #test just supply nzval for recompute
             end
             
             @testset "Singular matrix" begin
                 S = sparse([1 2; 0 0])
                 S = convert(SparseMatrixCSC{Tv, Ti}, S)
                 @test_throws SingularException klu(S)
-
             end
         end
     end
