@@ -58,7 +58,7 @@ using LinearAlgebra
                 #Just to test this works, we'll use the existing permutation vectors.
                 P = klua.p
                 Q = klua.q
-                klu_analyze!(klua, P, Q)
+                @test klu_analyze!(klua, P, Q).common.status == 0
                 klu_factor!(klua)
                 x = klua \ b
                 @test A*x ≈ b
@@ -94,4 +94,14 @@ using LinearAlgebra
             end
         end
     end
+end
+
+@testset "REPL printing of KLU" begin
+    A = sparse([1, 2], [1, 2], Float64[1.0, 1.0])
+    F = klu(A)
+    facstring = sprint((t, s) -> show(t, "text/plain", s), F)
+    lstring = sprint((t, s) -> show(t, "text/plain", s), F.L)
+    ustring = sprint((t, s) -> show(t, "text/plain", s), F.U)
+    fstring = sprint((t, s) -> show(t, "text/plain", s), F.F)
+    @test facstring == "$(summary(F))\nL factor:\n$lstring\nU factor:\n$ustring\nF factor:\n$fstring"
 end
