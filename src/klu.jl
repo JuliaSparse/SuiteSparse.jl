@@ -308,7 +308,7 @@ function getproperty(klu::KLUFactorization{Tv, Ti}, s::Symbol) where {Tv<:KLUTyp
         fnz = klu.nzoff
         # We often don't have an F, so create the right vectors for an empty SparseMatrixCSC
         if fnz == 0
-            Fp = zeros(Int64, klu.n + 1)
+            Fp = zeros(Ti, klu.n + 1)
             Fi = Vector{Ti}()
             Fx = Vector{Float64}()
             Fz = Tv == Float64 ? C_NULL : Vector{Float64}()
