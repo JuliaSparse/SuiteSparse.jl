@@ -3,11 +3,11 @@
 using Test, Random
 using SuiteSparse, LinearAlgebra, SparseArrays
 
-if Base.USE_GPL_LIBS
-    include("ambiguous.jl")
-    include("umfpack.jl")
-    include("cholmod.jl")
-    include("spqr.jl")
+# if Base.USE_GPL_LIBS
+#     include("ambiguous.jl")
+#     include("umfpack.jl")
+#     include("cholmod.jl")
+#     include("spqr.jl")
 
     # Test multithreaded execution
     let p, cmd = `$(Base.julia_cmd()) --depwarn=error --startup-file=no threads.jl`
@@ -28,4 +28,4 @@ if Base.USE_GPL_LIBS
             error("SuiteSparse threads test failed with nthreads == $other_nthreads")
         end
     end
-end
+# end
