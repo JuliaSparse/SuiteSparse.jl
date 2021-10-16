@@ -8,7 +8,7 @@ if Base.USE_GPL_LIBS
     include("umfpack.jl")
     include("cholmod.jl")
     include("spqr.jl")
-
+    # rerun tests
     # Test multithreaded execution
     let p, cmd = `$(Base.julia_cmd()) --depwarn=error --startup-file=no threads.jl`
         # test both nthreads==1 and nthreads>1. spawn a process to test whichever
