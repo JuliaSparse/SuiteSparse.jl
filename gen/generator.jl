@@ -48,7 +48,7 @@ for target in JLLEnvs.JLL_ENV_TRIPLES
     args = get_default_args(target)
     push!(args, "-I$include_dir")
     if startswith(target, "x86_64") || startswith(target, "powerpc64le") || startswith(target, "aarch64")
-        push!(args, "-DSUN64 -DLONGBLAS='long long'")
+        push!(args, "-DSUN64 -DLONGBLAS='long long' -D'SuiteSparse_long_max=9223372036854775801'")
     end
 
     header_files = [cholmod_h, cholmod_blas_h, SuiteSparseQR_C_h, klu_h, amd_h, colamd_h, ccolamd_h, umfpack_h]
