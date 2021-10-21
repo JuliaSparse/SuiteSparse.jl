@@ -5,11 +5,13 @@ const libumfpack = :libumfpack
 const libcholmod = :libcholmod
 const libspqr = :libspqr
 
-# patches
-const LONG_MAX = typemax(Clong)
+# Special treatment for Win64 since Clong is 32-bit on Win64
 if Sys.iswindows() && Sys.ARCH === :x86_64
-    const __int64 = Int64
-    const _I64_MAX = typemax(Int64)
+    const __int64 = Clonglong
+    const _I64_MAX = typemax(Clonglong)
+    const LONG_MAX = typemax(Clonglong)
+else
+    const LONG_MAX = typemax(Clong)
 end
 
 ## CHOLMOD
