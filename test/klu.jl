@@ -65,7 +65,7 @@ using LinearAlgebra
             @testset "Utility functions" begin
                 K = KLUFactorization(A);
                 @test size(K) == (5, 5)
-                @test size(K, 3) = 1
+                @test size(K, 3) == 1
                 @test_throws ArgumentError K.symbolic
                 @test_throws ArgumentError K.numeric
                 klu_analyze!(K);
