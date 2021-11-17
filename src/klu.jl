@@ -4,6 +4,8 @@ using SparseArrays
 using SparseArrays: SparseMatrixCSC
 import SparseArrays: nnz
 
+export KLUFactorization, klu
+
 import Base: (\), size, getproperty, setproperty!, propertynames, show
 import ..increment, ..increment!, ..decrement, ..decrement!
 import ..LibSuiteSparse:
@@ -54,7 +56,6 @@ import ..LibSuiteSparse:
     klu_l_refactor,
     klu_zl_refactor
 using LinearAlgebra
-import LinearAlgebra: Factorization, issuccess, ldiv!
 const KLUTypes = Union{Float64, ComplexF64}
 const KLUValueTypes = (:Float64, :ComplexF64)
 if sizeof(SuiteSparse_long) == 4
@@ -123,7 +124,7 @@ function _common(T)
         common = klu_common()
         ok = klu_defaults(Ref(common))
     else
-        throw(ArgumentError("T must be Int64 or Int32"))
+        throw(ArgumentError("Index type must be Int64 or Int32"))
     end
     if ok == 1
         return common
@@ -143,7 +144,7 @@ See the [`klu`](@ref) docs for more information.
 
 You typically should not construct this directly, instead use [`klu`](@ref).
 """
-mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: Factorization{Tv}
+mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: LinearAlgebra.Factorization{Tv}
     common::Union{klu_l_common, klu_common}
     _symbolic::Ptr{Cvoid}
     _numeric::Ptr{Cvoid}
@@ -153,9 +154,8 @@ mutable struct KLUFactorization{Tv<:KLUTypes, Ti<:KLUITypes} <: Factorization{Tv
     nzval::Vector{Tv}
     function KLUFactorization(n, colptr, rowval, nzval)
         Ti = eltype(colptr)
-        Tv = eltype(nzval)
         common = _common(Ti)
-        obj = new{Tv, Ti}(common, C_NULL, C_NULL, n, colptr, rowval, nzval)
+        obj = new{eltype(nzval), Ti}(common, C_NULL, C_NULL, n, colptr, rowval, nzval)
         function f(klu)
             _free_symbolic(klu)
             _free_numeric(klu)
@@ -189,7 +189,10 @@ end
 function KLUFactorization(A::SparseMatrixCSC{Tv, Ti}) where {Tv<:KLUTypes, Ti<:KLUITypes}
     n = size(A, 1)
     n == size(A, 2) || throw(ArgumentError("KLU only accepts square matrices."))
-    return KLUFactorization(n, decrement(A.colptr), decrement(A.rowval), A.nzval)
+    # Copying here to match UMFPACK
+    # Seems overly defensive, it's probably rare that the user will modify A before the
+    # numeric factorization is done.
+    return KLUFactorization(n, decrement(A.colptr), decrement(A.rowval), copy(A.nzval))
 end
 
 size(K::KLUFactorization) = (K.n, K.n)
@@ -590,17 +593,17 @@ function solve(klu, B)
     X = copy(B)
     return solve!(klu, X)
 end
-ldiv!(klu::KLUFactorization{Tv}, B::StridedVecOrMat{Tv}) where {Tv<:KLUTypes} =
+LinearAlgebra.ldiv!(klu::KLUFactorization{Tv}, B::StridedVecOrMat{Tv}) where {Tv<:KLUTypes} =
     solve!(klu, B)
-ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat{Tv}) where {Tv, Ti} =
+LinearAlgebra.ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat{Tv}) where {Tv, Ti} =
     solve!(klu, B)
-function ldiv!(klu::KLUFactorization{<:AbstractFloat}, B::StridedVecOrMat{<:Complex})
+function LinearAlgebra.ldiv!(klu::KLUFactorization{<:AbstractFloat}, B::StridedVecOrMat{<:Complex})
     imagX = solve(klu, imag(B))
     realX = solve(klu, real(B))
     map!(complex, B, realX, imagX)
 end
 
-function ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat{<:Complex}) where {Tv<:AbstractFloat, Ti}
+function LinearAlgebra.ldiv!(klu::LinearAlgebra.AdjOrTrans{Tv, KLUFactorization{Tv, Ti}}, B::StridedVecOrMat{<:Complex}) where {Tv<:AbstractFloat, Ti}
     imagX = solve(klu, imag(B))
     realX = solve(klu, real(B))
     map!(complex, B, realX, imagX)

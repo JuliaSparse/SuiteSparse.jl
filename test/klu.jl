@@ -14,6 +14,7 @@ using LinearAlgebra
     @testset "Core functionality for $Tv elements" for Tv in (Float64, ComplexF64)
         @testset "Core functionality for $Ti indices" for Ti ∈ Base.uniontypes(KLUITypes)
             A = convert(SparseMatrixCSC{Tv, Ti}, A0)
+            # test the raw vector construction method.
             klua = klu(size(A, 1), decrement(A.colptr), decrement(A.rowval), A.nzval)
             @test klua.F == klu(A).F
             @test nnz(klua) == 18
@@ -53,6 +54,7 @@ using LinearAlgebra
             @test transpose(A) * x ≈ b
 
             @inferred klua\fill(1, size(A, 2))
+
             @testset "Permutation vectors" begin
                 #Just to test this works, we'll use the existing permutation vectors.
                 @test klu_analyze!(klua, klua.p, klua.q).common.status == 0
@@ -63,6 +65,7 @@ using LinearAlgebra
             @testset "Utility functions" begin
                 K = KLUFactorization(A);
                 @test size(K) == (5, 5)
+                @test size(K, 3) = 1
                 @test_throws ArgumentError K.symbolic
                 @test_throws ArgumentError K.numeric
                 klu_analyze!(K);
@@ -83,7 +86,7 @@ using LinearAlgebra
                 @test F\b ≈ B\b ≈ Matrix(B)\b
                 @test klu!(F, B.nzval)\b ≈ B\b ≈ Matrix(B)\b #test just supplying nzval for recompute
             end
-            
+
             @testset "Singular matrix" begin
                 S = sparse([1 2; 0 0])
                 S = convert(SparseMatrixCSC{Tv, Ti}, S)
