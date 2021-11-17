@@ -5,11 +5,15 @@ const libumfpack = :libumfpack
 const libcholmod = :libcholmod
 const libspqr = :libspqr
 const libklu = :libklu
-# patches
-const LONG_MAX = typemax(Clong)
+
+# Special treatment for Win64 since Clong is 32-bit on Win64
+# LONG_MAX is used everywhere, except on Win64
+# See discussion in https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/master/SuiteSparse_config/SuiteSparse_config.h
 if Sys.iswindows() && Sys.ARCH === :x86_64
-    const __int64 = Int64
-    const _I64_MAX = typemax(Int64)
+    const __int64 = Clonglong
+    const _I64_MAX = typemax(Clonglong)
+else
+    const LONG_MAX = typemax(Clong)
 end
 
 ## CHOLMOD
@@ -52,7 +56,7 @@ else
 end
 
 # exports
-const PREFIXES = ["cholmod_", "CHOLMOD_"]
+const PREFIXES = ["cholmod_", "CHOLMOD_", "umfpack_"]
 for name in names(@__MODULE__; all=true), prefix in PREFIXES
     if startswith(string(name), prefix)
         @eval export $name
