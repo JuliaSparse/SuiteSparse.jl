@@ -24,9 +24,6 @@ SuiteSparseQR_C_h = joinpath(include_dir, "SuiteSparseQR_C.h")
 umfpack_h = joinpath(include_dir, "umfpack.h")
 @assert isfile(umfpack_h)
 
-klu_h = joinpath(include_dir, "klu.h")
-@assert isfile(klu_h)
-
 amd_h = joinpath(include_dir, "amd.h")
 @assert isfile(amd_h)
 
@@ -48,10 +45,10 @@ for target in JLLEnvs.JLL_ENV_TRIPLES
     args = get_default_args(target)
     push!(args, "-I$include_dir")
     if startswith(target, "x86_64") || startswith(target, "powerpc64le") || startswith(target, "aarch64")
-        push!(args, "-DSUN64 -DLONGBLAS='long long'")
+        push!(args, "-DSUN64 -DLONGBLAS='long long' -D'SuiteSparse_long_max=9223372036854775801'")
     end
 
-    header_files = [cholmod_h, cholmod_blas_h, SuiteSparseQR_C_h, klu_h, amd_h, colamd_h, ccolamd_h, umfpack_h]
+    header_files = [cholmod_h, cholmod_blas_h, SuiteSparseQR_C_h, amd_h, colamd_h, ccolamd_h, umfpack_h]
 
     ctx = create_context(header_files, args, options)
 
