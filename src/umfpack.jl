@@ -217,10 +217,10 @@ lu(A::Union{SparseMatrixCSC{T},SparseMatrixCSC{Complex{T}}};
     "sparse floating point LU using UMFPACK or lu(Array(A)) for generic ",
     "dense LU.")))
 lu(A::SparseMatrixCSC; check::Bool = true) = lu(float(A); check = check)
-lu(A::Adjoint{T, <:SparseMatrixCSC{T}}; check::Bool = true) where {T<:UMFVTypes} =
-lu(A.parent; check)'
-lu(A::Transpose{T, <:SparseMatrixCSC{T}}; check::Bool = true) where {T<:UMFVTypes} =
-transpose(lu(A.parent))
+
+# We could do this as lu(A') = lu(A)' with UMFPACK, but the user could want to do one over the other
+lu(A::Union{Adjoint{T, S}, Transpose{T, S}}; check::Bool = true) where {T<:UMFVTypes, S<:SparseMatrixCSC{T}} =
+lu(copy(A); check)
 
 """
     lu!(F::UmfpackLU, A::SparseMatrixCSC; check=true) -> F::UmfpackLU
