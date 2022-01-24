@@ -81,6 +81,14 @@ using SparseArrays: nnz, sparse, sprand, sprandn, SparseMatrixCSC
 
             @test transpose(A) * x ≈ b
 
+            lua = lu(A')
+            x = lua \ b
+            @test A'*x ≈ b
+
+            lua = lu(transpose(A))
+            x = lua \ b
+            @test transpose(A)*x ≈ b
+
             # Element promotion and type inference
             @inferred lua\fill(1, size(A, 2))
         end
