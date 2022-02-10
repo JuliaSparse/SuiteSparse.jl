@@ -184,7 +184,6 @@ The relation between `F` and `A` is
 `F` further supports the following functions:
 
 - [`\\`](@ref)
-- [`cond`](@ref)
 - [`det`](@ref)
 
 !!! note
