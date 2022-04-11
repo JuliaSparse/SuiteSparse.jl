@@ -196,10 +196,6 @@ See also [`lu!`](@ref)
     `SparseMatrixCSC{Float64}` or `SparseMatrixCSC{ComplexF64}` as appropriate.
 
 [^ACM832]: Davis, Timothy A. (2004b). Algorithm 832: UMFPACK V4.3---an Unsymmetric-Pattern Multifrontal Method. ACM Trans. Math. Softw., 30(2), 196–199. [doi:10.1145/992200.992206](https://doi.org/10.1145/992200.992206)
-
-[^ACM836]: Davis, Timothy A., Gilbert, J. R., Larimore, S. I., & Ng, E. G. (2004b). Algorithm 836: COLAMD, a Column Approximate Minimum Degree Ordering Algorithm. ACM Trans. Math. Softw., 30(3), 377–380. [doi:10.1145/1024074.1024080](https://doi.org/10.1145/1024074.1024080)
-
-[^ACM837]: Amestoy, P. R., Davis, T. A., & Duff, I. S. (2004). Algorithm 837: AMD, an Approximate Minimum Degree Ordering Algorithm. ACM Trans. Math. Softw., 30(3), 381–388. [doi:10.1145/1024074.1024081](https://doi.org/10.1145/1024074.1024081)
 """
 function lu(S::SparseMatrixCSC{<:UMFVTypes,<:UMFITypes}; check::Bool = true)
     zerobased = getcolptr(S)[1] == 0

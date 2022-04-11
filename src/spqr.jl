@@ -189,10 +189,6 @@ Column permutation:
 ```
 
 [^ACM933]: Foster, L. V., & Davis, T. A. (2013). Algorithm 933: Reliable Calculation of Numerical Rank, Null Space Bases, Pseudoinverse Solutions, and Basic Solutions Using SuitesparseQR. ACM Trans. Math. Softw., 40(1). [doi:10.1145/2513109.2513116](https://doi.org/10.1145/2513109.2513116)
-
-[^ACM836]: Davis, Timothy A., Gilbert, J. R., Larimore, S. I., & Ng, E. G. (2004b). Algorithm 836: COLAMD, a Column Approximate Minimum Degree Ordering Algorithm. ACM Trans. Math. Softw., 30(3), 377–380. [doi:10.1145/1024074.1024080](https://doi.org/10.1145/1024074.1024080)
-
-[^ACM837]: Amestoy, P. R., Davis, T. A., & Duff, I. S. (2004). Algorithm 837: AMD, an Approximate Minimum Degree Ordering Algorithm. ACM Trans. Math. Softw., 30(3), 381–388. [doi:10.1145/1024074.1024081](https://doi.org/10.1145/1024074.1024081)
 """
 function LinearAlgebra.qr(A::SparseMatrixCSC{Tv}; tol=_default_tol(A), ordering=ORDERING_DEFAULT) where {Tv <: CHOLMOD.VTypes}
     R     = Ref{Ptr{CHOLMOD.cholmod_sparse}}()
