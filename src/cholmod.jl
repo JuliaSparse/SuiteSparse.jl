@@ -1282,13 +1282,18 @@ true
 ```
 
 !!! note
-    This method uses the CHOLMOD library from SuiteSparse, which only supports
-    doubles or complex doubles. Input matrices not of those element types will
+    This method uses the CHOLMOD[^ACM887][^DavisHager2009][^ACM836][^ACM837] library from [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse). 
+    CHOLMOD only supports double or complex double element types. 
+    Input matrices not of those element types will
     be converted to `SparseMatrixCSC{Float64}` or `SparseMatrixCSC{ComplexF64}`
     as appropriate.
 
     Many other functions from CHOLMOD are wrapped but not exported from the
     `Base.SparseArrays.CHOLMOD` module.
+
+[^ACM887]: Chen, Y., Davis, T. A., Hager, W. W., & Rajamanickam, S. (2008). Algorithm 887: CHOLMOD, Supernodal Sparse Cholesky Factorization and Update/Downdate. ACM Trans. Math. Softw., 35(3). [doi:10.1145/1391989.1391995](https://doi.org/10.1145/1391989.1391995)
+
+[^DavisHager2009]: Davis, Timothy A., & Hager, W. W. (2009). Dynamic Supernodes in Sparse Cholesky Update/Downdate and Triangular Solves. ACM Trans. Math. Softw., 35(4). [doi:10.1145/1462173.1462176](https://doi.org/10.1145/1462173.1462176)
 """
 cholesky(A::Union{SparseMatrixCSC{T}, SparseMatrixCSC{Complex{T}},
     Symmetric{T,SparseMatrixCSC{T,SuiteSparse_long}},
@@ -1320,7 +1325,7 @@ have the type tag, it must still be symmetric or Hermitian.
 See also [`ldlt`](@ref).
 
 !!! note
-    This method uses the CHOLMOD library from SuiteSparse, which only supports
+    This method uses the CHOLMOD library from [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse), which only supports
     doubles or complex doubles. Input matrices not of those element types will
     be converted to `SparseMatrixCSC{Float64}` or `SparseMatrixCSC{ComplexF64}`
     as appropriate.
@@ -1381,8 +1386,8 @@ it should be a permutation of `1:size(A,1)` giving the ordering to use
 (instead of CHOLMOD's default AMD ordering).
 
 !!! note
-    This method uses the CHOLMOD library from SuiteSparse, which only supports
-    doubles or complex doubles. Input matrices not of those element types will
+    This method uses the CHOLMOD[^ACM887][^DavisHager2009][^ACM836][^ACM837] library from [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse).
+    CHOLMOD only supports double or complex double element types. Input matrices not of those element types will
     be converted to `SparseMatrixCSC{Float64}` or `SparseMatrixCSC{ComplexF64}`
     as appropriate.
 

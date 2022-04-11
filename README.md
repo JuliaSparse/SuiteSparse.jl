@@ -19,3 +19,5 @@
 This package ships as part of the Julia stdlib.
 
 SuiteSparse.jl provides Julia wrappers for the [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) library, and provides Julia's sparse linear algebra capabilities - specifically the solvers.
+
+If you use this package in an academic work please cite [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse) as well as the individual components you used. The bibtex entries may be found [here](https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/master/CITATION.bib).

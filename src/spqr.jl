@@ -147,10 +147,10 @@ _default_tol(A::SparseMatrixCSC) =
 
 Compute the `QR` factorization of a sparse matrix `A`. Fill-reducing row and column permutations
 are used such that `F.R = F.Q'*A[F.prow,F.pcol]`. The main application of this type is to
-solve least squares or underdetermined problems with [`\\`](@ref). The function calls the C library SPQR.
+solve least squares or underdetermined problems with [`\\`](@ref). The function calls the C library SPQR[^ACM933][^ACM836][^ACM837].
 
 !!! note
-    `qr(A::SparseMatrixCSC)` uses the SPQR library that is part of SuiteSparse.
+    `qr(A::SparseMatrixCSC)` uses the SPQR library that is part of [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse).
     As this library only supports sparse matrices with [`Float64`](@ref) or
     `ComplexF64` elements, as of Julia v1.4 `qr` converts `A` into a copy that is
     of type `SparseMatrixCSC{Float64}` or `SparseMatrixCSC{ComplexF64}` as appropriate.
@@ -187,6 +187,8 @@ Column permutation:
  1
  2
 ```
+
+[^ACM933]: Foster, L. V., & Davis, T. A. (2013). Algorithm 933: Reliable Calculation of Numerical Rank, Null Space Bases, Pseudoinverse Solutions, and Basic Solutions Using SuitesparseQR. ACM Trans. Math. Softw., 40(1). [doi:10.1145/2513109.2513116](https://doi.org/10.1145/2513109.2513116)
 """
 function LinearAlgebra.qr(A::SparseMatrixCSC{Tv}; tol=_default_tol(A), ordering=ORDERING_DEFAULT) where {Tv <: CHOLMOD.VTypes}
     R     = Ref{Ptr{CHOLMOD.cholmod_sparse}}()
