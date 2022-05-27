@@ -8,6 +8,70 @@ using LinearAlgebra:
     I, det, issuccess, ldiv!, lu, lu!, Adjoint, Transpose, SingularException, Diagonal
 using SparseArrays: nnz, sparse, sprand, sprandn, SparseMatrixCSC
 
+@testset "Workspace management" begin
+    A0 = I + sprandn(100, 100, 0.01)
+    b0 = randn(100)
+    bn0 = rand(100, 20)
+    @testset "Core functionality for $Tv elements" for Tv in (Float64, ComplexF64)
+        for Ti in Base.uniontypes(SuiteSparse.UMFPACK.UMFITypes)
+            A = convert(SparseMatrixCSC{Tv,Ti}, A0)
+            Af = lu(A)
+            b = convert(Vector{Tv}, b0)
+            x = SuiteSparse.UMFPACK.solve!(
+                similar(b), 
+                Af, b, 
+                SuiteSparse.UMFPACK.UMFPACK_A)
+            @test A \ b == x
+            bn = convert(Matrix{Tv}, bn0)
+            xn = similar(bn)
+            for i in 1:20
+                xn[:, i] .= SuiteSparse.UMFPACK.solve!(
+                    similar(bn[:, i]), 
+                    Af, bn[:, i], 
+                    SuiteSparse.UMFPACK.UMFPACK_A)
+            end
+            @test A \ bn == xn
+        end
+    end
+    f = function(Tv, Ti)
+        A = convert(SparseMatrixCSC{Tv,Ti}, A0)
+        Af = lu(A)
+        b = convert(Vector{Tv}, b0)
+        x = similar(b)
+        ldiv!(x, Af, b)
+        aloc1 = @allocated ldiv!(x, Af, b)
+        bn = convert(Matrix{Tv}, bn0)
+        xn = similar(bn)
+        ldiv!(xn, Af, bn)
+        aloc2 = @allocated ldiv!(xn, Af, bn)
+        return aloc1 + aloc2
+    end
+    @testset "Allocations" begin
+        for Tv in Base.uniontypes(SuiteSparse.UMFPACK.UMFVTypes),
+            Ti in Base.uniontypes(SuiteSparse.UMFPACK.UMFITypes)
+            @test f(Tv, Ti) == 0
+        end
+    end
+    @testset "new_workspace" begin
+        for Tv in Base.uniontypes(SuiteSparse.UMFPACK.UMFVTypes),
+            Ti in Base.uniontypes(SuiteSparse.UMFPACK.UMFITypes)
+            A = convert(SparseMatrixCSC{Tv,Ti}, A0)
+            Af = lu(A)
+            Bf = SuiteSparse.UMFPACK.new_workspace(Af)
+            for i in [:symbolic, :numeric, :colptr, :rowval, :nzval]
+                @test getproperty(Af, i) === getproperty(Bf, i)
+            end
+            for i in [:m, :n, :status]
+                @test getproperty(Af, i) == getproperty(Bf, i)
+            end
+            for i in [:W, :Wi]
+                @test getproperty(Af, i) !== getproperty(Bf, i)
+                @test length(getproperty(Af, i)) == length(getproperty(Bf, i))
+            end
+        end
+    end
+end
+
 @testset "UMFPACK wrappers" begin
     se33 = sparse(1.0I, 3, 3)
     do33 = fill(1., 3)
