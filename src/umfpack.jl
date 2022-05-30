@@ -189,7 +189,7 @@ The relation between `F` and `A` is
 See also [`lu!`](@ref)
 
 !!! note
-    `lu(A::SparseMatrixCSC)` uses the UMFPACK[^ACM832][^ACM836][^ACM837] library that is part of
+    `lu(A::SparseMatrixCSC)` uses the UMFPACK[^ACM832] library that is part of
     [SuiteSparse](https://github.com/DrTimothyAldenDavis/SuiteSparse). 
     As this library only supports sparse matrices with [`Float64`](@ref) or
     `ComplexF64` elements, `lu` converts `A` into a copy that is of type
