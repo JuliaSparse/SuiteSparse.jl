@@ -8,6 +8,7 @@ const increment! = SparseArrays.increment!
 const decrement = SparseArrays.decrement
 const decrement! = SparseArrays.decrement!
 
+const LibSuiteSparse = SparseArrays.LibSuiteSparse
 const CHOLMOD = SparseArrays.CHOLMOD
 const SPQR = SparseArrays.SPQR
 const UMFPACK = SparseArrays.UMFPACK
