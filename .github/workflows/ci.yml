@@ -52,18 +52,3 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           file: lcov.info
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1.0.0
-      - uses: julia-actions/setup-julia@latest
-        with:
-          # version: '1.6'
-          version: 'nightly'
-      - name: Generate docs
-        run: |
-          julia --color=yes -e 'write("Project.toml", replace(read("Project.toml", String), r"uuid = .*?\n" =>"uuid = \"bffdd4b1-f692-4644-bc37-34e70e7d0692\"\n"));'
-          julia --project --color=yes -e 'using Pkg; Pkg.activate("docs"); Pkg.instantiate(); Pkg.develop(PackageSpec(path = pwd()))'
-          julia --project=docs --color=yes docs/make.jl pdf
-        env:
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
