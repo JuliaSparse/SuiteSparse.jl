@@ -9,8 +9,11 @@ const decrement = SparseArrays.decrement
 const decrement! = SparseArrays.decrement!
 
 const LibSuiteSparse = SparseArrays.LibSuiteSparse
-const CHOLMOD = SparseArrays.CHOLMOD
-const SPQR = SparseArrays.SPQR
-const UMFPACK = SparseArrays.UMFPACK
+
+if Base.USE_GPL_LIBS
+    const CHOLMOD = SparseArrays.CHOLMOD
+    const SPQR = SparseArrays.SPQR
+    const UMFPACK = SparseArrays.UMFPACK
+end
 
 end # module SuiteSparse
